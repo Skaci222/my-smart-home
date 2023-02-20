@@ -1,10 +1,15 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="com.espressif.espressif.MainActivity">
+    tools:context="com.myproject.espressif.MainActivity">
     <item
-        android:id="@+id/action_settings"
-        android:orderInCategory="100"
-        android:title="@string/action_settings"
-        app:showAsAction="never" />
+        android:id="@+id/actionAddDevice"
+        android:title="Add device"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/disconnect"
+        android:title="Disconnect from Server"
+        app:showAsAction="never"/>
+
 </menu>

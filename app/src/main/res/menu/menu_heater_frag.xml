@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/turnHeaterOn"
+        android:title="Turn Heater On"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/turnHeaterOff"
+        android:title="Turn Heater Off"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/historyHeater"
+        android:title="Historical data"
+        app:showAsAction="never"/>
+
+</menu>

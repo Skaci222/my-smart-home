@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
+    <TextView
+        android:id="@+id/tvTemp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Temperature"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="100dp"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        />
+
+    <TextView
+        android:id="@+id/tvHumidity"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tvTempValue"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="30dp"
+        android:text="Humidity"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        />
+
+    <TextView
+        android:id="@+id/tvTempValue"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="00.00"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@id/tvTemp"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="15dp"
+        android:textSize="20sp" />
+
+    <TextView
+        android:id="@+id/tvHumidityValue"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tvHumidity"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"
+        android:text="00.00"
+        android:textSize="20sp" />
+
+
+</RelativeLayout>

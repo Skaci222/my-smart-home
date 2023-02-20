@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="@dimen/margin_10">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/tvDeviceType"
+        android:text="Select device to be connected: "
+        android:layout_margin="10dp"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large" />
+
+    <RadioGroup
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/rgTypes"
+        android:layout_below="@id/tvDeviceType"
+        android:layout_margin="10dp">
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/rbTemp"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:text="Temperature Device"/>
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/rbMotionDetect"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+
+            android:text="Motion Detector"/>
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/rbHeater"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:text="Heater"/>
+
+    </RadioGroup>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/tvNameDevice"
+        android:layout_below="@+id/rgTypes"
+        android:layout_margin="10dp"
+        android:text="Name Your Device:"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/etNameDevice"
+        android:layout_below="@id/tvNameDevice"
+        android:layout_margin="10dp"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        android:hint="Enter Device Name"/>
+
+</RelativeLayout>

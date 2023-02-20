@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.activities.HeaterFragment">
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/tvHeatOnOffStatus"
+        android:layout_alignParentRight="true"
+        android:text="Status: OFF "
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        android:layout_margin="10dp"/>
+
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/btnPickTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_margin="@dimen/margin_10"
+        android:src="@drawable/ic_alarm"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large" />
+
+
+    <TextView
+        android:id="@+id/tvTimeTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:layout_above="@+id/tvShowTime"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        android:text="Heater will turn on at" />
+
+    <TextView
+        android:id="@+id/tvShowTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:textSize="40sp"
+        android:text="---" />
+
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:layout_below="@id/tvShowTime"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        android:text="will turn off after one hour" />
+
+</RelativeLayout>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.espressif.wifi_provisioning">
+    package="com.myproject">
 
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -13,20 +13,28 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application
+        android:name=".ui.activities.App"
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
+        android:icon="@drawable/ic_lock"
+        android:label=""
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
+
         <activity
-            android:name="com.espressif.ui.activities.EspMainActivity"
-            android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
-            android:label="@string/app_name"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:name=".ui.activities.HistoricalTempData"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.TestActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.StartScreen"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -34,45 +42,62 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.espressif.ui.activities.AddDeviceActivity"
+            android:name="com.myproject.provisioning.DeviceSettingsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.HomeActivity"
+            android:exported="false" />
+        <activity
+            android:name="com.myproject.provisioning.EspMainActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
             android:label="@string/title_activity_provision_landing"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name="com.espressif.ui.activities.BLEProvisionLanding"
+            android:name="com.myproject.provisioning.AddDeviceActivity"
+            android:label="@string/title_activity_provision_landing"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name="com.myproject.provisioning.BLEProvisionLanding"
             android:label="@string/title_activity_connect_device"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name="com.espressif.ui.activities.WiFiConfigActivity"
+            android:name="com.myproject.provisioning.WiFiConfigActivity"
             android:label="@string/title_activity_wifi_config"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name="com.espressif.ui.activities.ProvisionLanding"
+            android:name="com.myproject.provisioning.ProvisionLanding"
             android:label="@string/title_activity_provision_landing"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name="com.espressif.ui.activities.ProvisionActivity"
+            android:name="com.myproject.provisioning.ProvisionActivity"
             android:label="@string/title_activity_provisioning"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name="com.espressif.ui.activities.SettingsActivity"
+            android:name="com.myproject.provisioning.SettingsActivity"
             android:label="@string/title_activity_settings"
             android:screenOrientation="portrait" />
         <activity
-            android:name="com.espressif.ui.activities.WiFiScanActivity"
+            android:name="com.myproject.provisioning.WiFiScanActivity"
             android:label="@string/title_activity_wifi_scan_list"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name="com.espressif.ui.activities.ProofOfPossessionActivity"
+            android:name="com.myproject.provisioning.ProofOfPossessionActivity"
             android:label="@string/title_activity_pop"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
 
+        <service android:name=".ui.activities.MyService" />
+
+        <receiver android:name=".ui.activities.NotificationReceiver" />
+        <receiver android:name=".ui.activities.AlertReceiver" />
+        <receiver android:name=".ui.activities.HeatOffReceiver" />
     </application>
 
 </manifest>

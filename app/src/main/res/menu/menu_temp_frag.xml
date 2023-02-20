@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/history"
+        android:title="Historical Data"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/actionTimeConfig"
+    android:title="Update values every.."
+    app:showAsAction="never" >
+
+    <menu>
+        <group android:checkableBehavior="single">
+
+            <item
+                android:id="@+id/updateOneMin"
+                android:title="1 min" />
+            <item
+                android:id="@+id/updateFiveMin"
+                android:title="5 min" />
+            <item
+                android:id="@+id/updateTenMin"
+                android:title="10 min" />
+        </group>
+    </menu>
+</item>
+</menu>
