@@ -29,12 +29,14 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.core.widget.ContentLoadingProgressBar;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.myproject.AppConstants;
 import com.myproject.provisioning.listeners.ResponseListener;
 import com.myproject.R;
 import com.myproject.provisioning.listeners.ProvisionListener;
 import com.myproject.room.Device;
+import com.myproject.room.DeviceViewModel;
 import com.myproject.ui.activities.StartScreen;
 
 import org.greenrobot.eventbus.EventBus;
@@ -42,6 +44,9 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 public class ProvisionActivity extends AppCompatActivity { // this is the activity where JSON data is sent to ESP via sentToEndPoint method
 
@@ -63,6 +68,9 @@ public class ProvisionActivity extends AppCompatActivity { // this is the activi
     private String name;
     private String deviceType;
     private android.app.AlertDialog dialog;
+    private String mac;
+    private DeviceViewModel deviceViewModel;
+    private Bundle bundle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,7 +87,13 @@ public class ProvisionActivity extends AppCompatActivity { // this is the activi
 
         Log.d(TAG, "Selected AP -" + ssidValue);
 
-        sendToEndpoint();
+        bundle = getIntent().getExtras();
+        name = bundle.getString("name");
+        deviceType = bundle.getString("type");
+
+        deviceViewModel = new ViewModelProvider(this).get(DeviceViewModel.class);
+
+        dataExchange();
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
@@ -121,7 +135,11 @@ public class ProvisionActivity extends AppCompatActivity { // this is the activi
 
         @Override
         public void onClick(View v) {
-            provisionManager.getEspDevice().disconnectDevice();
+            Device device = new Device(name, deviceType, mac);
+            deviceViewModel.insert(device);
+            Intent i = new Intent(getApplicationContext(), StartScreen.class);
+            i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(i);
             finish();
         }
     };
@@ -157,14 +175,15 @@ public class ProvisionActivity extends AppCompatActivity { // this is the activi
         btnOk.setOnClickListener(okBtnClickListener);
     }
 
-    public void sendToEndpoint() {
+    public void dataExchange() {
 
         ESPDevice device = provisionManager.getEspDevice();
 
         JSONObject obj = new JSONObject();
         try {
-            obj.put("URI", "tcp://192.168.1.100:1883");
-            obj.put("Port", "1883");
+            obj.put("hostname", "e7ea538cb0564a42b068269a96574848.s1.eu.hivemq.cloud");
+            obj.put("username", "pladi");
+            obj.put("password", "password");
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -172,7 +191,10 @@ public class ProvisionActivity extends AppCompatActivity { // this is the activi
         device.sendDataToCustomEndPoint(CUSTOM_ENDPOINT, b, new ResponseListener() {
             @Override
             public void onSuccess(byte[] returnData) {
-                Log.d("SendCustomMsg", "return data: " + returnData.toString());
+                mac = new String(returnData, StandardCharsets.UTF_8);
+                //obtain Mac from this callback and save it in a variable, send to StartScreen
+
+                Log.d(TAG, "return data: " + mac);
             }
 
             @Override
@@ -182,6 +204,7 @@ public class ProvisionActivity extends AppCompatActivity { // this is the activi
         });
 
     }
+
 
     private void doProvisioning() {
 
@@ -215,7 +238,7 @@ public class ProvisionActivity extends AppCompatActivity { // this is the activi
 
                     @Override
                     public void run() {
-                        tick1.setImageResource(R.drawable.ic_checkbox_on);
+                        tick1.setImageResource(R.drawable.ic_baseline_check_24);
                         tick1.setVisibility(View.VISIBLE);
                         progress1.setVisibility(View.GONE);
                         tick2.setVisibility(View.GONE);
@@ -249,7 +272,7 @@ public class ProvisionActivity extends AppCompatActivity { // this is the activi
 
                     @Override
                     public void run() {
-                        tick2.setImageResource(R.drawable.ic_checkbox_on);
+                        tick2.setImageResource(R.drawable.ic_baseline_check_24);
                         tick2.setVisibility(View.VISIBLE);
                         progress2.setVisibility(View.GONE);
                         tick3.setVisibility(View.GONE);
@@ -313,12 +336,11 @@ public class ProvisionActivity extends AppCompatActivity { // this is the activi
                     @Override
                     public void run() {
                         isProvisioningCompleted = true;
-                        tick3.setImageResource(R.drawable.ic_checkbox_on);
+                        tick3.setImageResource(R.drawable.ic_baseline_check_24);
                         tick3.setVisibility(View.VISIBLE);
                         progress3.setVisibility(View.GONE);
                         hideLoading();
-                        Intent i = new Intent(getApplicationContext(), StartScreen.class);
-                        startActivity(i);
+
                     }
                 });
             }

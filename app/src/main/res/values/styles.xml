@@ -3,9 +3,9 @@
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.Bridge">
         <!-- Customize your theme here. -->
-        <item name="colorPrimary">#00000000</item>
-        <item name="colorPrimaryDark">#0932C8</item>
-        <item name="colorAccent">#122580</item>
+        <item name="colorPrimary">#4C646B</item>
+        <item name="colorPrimaryDark">#4C646B</item>
+        <item name="colorAccent">#555555</item>
 
     </style>
 
@@ -15,7 +15,6 @@
     </style>
 
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.MaterialComponents.Dark.ActionBar" />
-
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.MaterialComponents.Light" />
 

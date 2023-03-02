@@ -34,7 +34,7 @@ public class MyService extends Service {
 
         Notification notification = new NotificationCompat.Builder(
                 this.getApplicationContext(), App.SERVICE_NOTIFICATION)
-                .setSmallIcon(R.drawable.ic_baseline_check_box_24)
+                .setSmallIcon(R.drawable.ic_info)
                 .setContentTitle(title)
                 .setContentText(message)
                 .setAutoCancel(true)

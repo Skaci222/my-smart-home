@@ -1,7 +1,13 @@
 package com.myproject.ui.activities;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContract;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
@@ -38,6 +44,8 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.myproject.R;
 import com.myproject.provisioning.EspMainActivity;
 import com.myproject.provisioning.ProvisionLanding;
@@ -80,7 +88,7 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class StartScreen extends AppCompatActivity implements RenameDialog.OnInputListener {
+public class StartScreen extends AppCompatActivity implements RenameDialog.OnInputListener, DeleteDeviceListener {
 
     public static final String TAG = "StartScreen: ";
     public static final String TAG_MQTT = "MQTT: ";
@@ -103,7 +111,7 @@ public class StartScreen extends AppCompatActivity implements RenameDialog.OnInp
     public static final String HIVE_BROKER = "ssl://e7ea538cb0564a42b068269a96574848.s1.eu.hivemq.cloud:8883";
     public static final String MENU_SELECTION = "menu_selection";
 
-    MenuItem menuItem;
+
     private int menuItemSelected = -1;
     private MqttAndroidClient client;
     private String clientId;
@@ -111,28 +119,29 @@ public class StartScreen extends AppCompatActivity implements RenameDialog.OnInp
     private RecyclerView mRecyclerView;
     private RecyclerViewAdapter mRecyclerViewAdapter;
     private RecyclerView.LayoutManager layoutManager;
-    private String timeText;
 
     private NotificationManagerCompat notificationManager;
     private static StartScreen ins;
-    private ImageView ivConnected;
+    private ImageView ivBackground;
     private AlertDialog dialog;
     public String name;
     private String newName;
     private String deviceType;
-    public TextView tvDevice;
-    private TextView tvTimeConfig;
+    private String mac;
     private int deviceId;
-    private String customSasToken;
-    private HeaterFragment heaterFrag;
-    TemperatureFragment tempfrag;
 
+    private HeaterFragment heaterFrag;
+    private TemperatureFragment tempfrag;
+    private ExtendedFloatingActionButton menuBtn;
+    private FloatingActionButton addBtn;
+    private TextView tvAddDevice;
+    private boolean fabItemsVisible = false;
 
     private DeviceViewModel deviceViewModel;
     private MessageViewModel messageViewModel;
     private SharedPreferences sharedPreferences;
     private SharedPreferences.Editor editor;
-    HiveDb hiveDb;
+    private Device device;
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
@@ -141,13 +150,43 @@ public class StartScreen extends AppCompatActivity implements RenameDialog.OnInp
         setContentView(R.layout.activity_start_screen);
         ins = this;
 
+        ivBackground = findViewById(R.id.ivBackground);
+        tvAddDevice = findViewById(R.id.tvFabAdd);
+        addBtn = findViewById(R.id.floatingAddBtn);
+        menuBtn = findViewById(R.id.floatingMenuBtn);
+        addBtn.setVisibility(View.GONE);
+        tvAddDevice.setVisibility(View.GONE);
+        menuBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+               if(!fabItemsVisible){
+                   ivBackground.setAlpha(0.1f);
+                   addBtn.show();
+                   tvAddDevice.setVisibility(View.VISIBLE);
+                   fabItemsVisible = true;
+               } else{
+                   ivBackground.setAlpha(.25f);
+                   addBtn.hide();
+                   tvAddDevice.setVisibility(View.GONE);
+                   fabItemsVisible = false;
+               }
+            }
+        });
+        addBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                initialDialog();
+            }
+
+        });
+
         notificationManager = NotificationManagerCompat.from(this);
         clientId = "AndroidDevice";
         // clientId = "a:y94ieb:andId-001";
         client = new MqttAndroidClient(getApplicationContext(), HIVE_BROKER,
                 clientId, Ack.AUTO_ACK);
         mRecyclerView = findViewById(R.id.recycler_view);
-        layoutManager = new GridLayoutManager(this, 2);
+        layoutManager = new GridLayoutManager(this, 3);
         mRecyclerViewAdapter = new RecyclerViewAdapter();
         mRecyclerView.setLayoutManager(layoutManager);
         mRecyclerView.setAdapter(mRecyclerViewAdapter);
@@ -156,6 +195,16 @@ public class StartScreen extends AppCompatActivity implements RenameDialog.OnInp
         mRecyclerViewAdapter.setOnItemClickListener(new RecyclerViewAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(int position) {
+                device = mRecyclerViewAdapter.getDeviceAt(position);
+                String deviceName = mRecyclerViewAdapter.getDeviceAt(position).getName();
+                deviceId = mRecyclerViewAdapter.getDeviceAt(position).getId();
+                Bundle b = new Bundle();
+                b.putString("deviceName", deviceName);
+                b.putInt("id", deviceId);
+                tempfrag = new TemperatureFragment();
+                tempfrag.setArguments(b);
+
+
                 if (mRecyclerViewAdapter.getDeviceAt(position).getType().equals("heater")) {
                     if (tempfrag != null && tempfrag.isAdded()) {
                         getSupportFragmentManager().popBackStack();
@@ -240,13 +289,6 @@ public class StartScreen extends AppCompatActivity implements RenameDialog.OnInp
             }
         }).attachToRecyclerView(mRecyclerView);
 
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("http://e7ea538cb0564a42b068269a96574848.s1.eu.hivemq.cloud:8883/api/v1/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-
-        hiveDb = retrofit.create(HiveDb.class);
-
        /* try {
             customSasToken = generateSasToken("KACI.azure-devices.net", "8lIhminu5ggTCZhRQJ8XRCZCLnangmrZ6z776ibcmGM=");
             Log.i(TAG, "generated custom SAS token: " + customSasToken);
@@ -254,39 +296,12 @@ public class StartScreen extends AppCompatActivity implements RenameDialog.OnInp
             e.printStackTrace();
         }*/
 
-        //customSasToken = "SharedAccessSignature sr=KACI.azure-devices.net&sig=fx1KVtSBp3YvPQy3%2BDllADiW7K%2BIJfKijBOinPfftjg%3D&se=1985201005";
-
-
         try {
             connectMQTT();
         } catch (MqttException e) {
             e.printStackTrace();
         }
     }
-
-    //generate custom SAS token
-    @RequiresApi(api = Build.VERSION_CODES.O)
-    public static String generateSasToken(String resourceUri, String key) throws Exception {
-        // Token will expire in 10 years
-        long expiry = Instant.now().getEpochSecond() + 315360000;
-
-        String stringToSign = URLEncoder.encode(resourceUri, String.valueOf(StandardCharsets.UTF_8)) + "\n" + expiry;
-        byte[] decodedKey = Base64.getDecoder().decode(key);
-
-        Mac sha256HMAC = Mac.getInstance("HmacSHA256");
-        SecretKeySpec secretKey = new SecretKeySpec(decodedKey, "HmacSHA256");
-        sha256HMAC.init(secretKey);
-        Base64.Encoder encoder = Base64.getEncoder();
-
-        String signature = new String(encoder.encode(
-                sha256HMAC.doFinal(stringToSign.getBytes(StandardCharsets.UTF_8))), StandardCharsets.UTF_8);
-
-        String token = "SharedAccessSignature sr=" + URLEncoder.encode(resourceUri, String.valueOf(StandardCharsets.UTF_8))
-                + "&sig=" + URLEncoder.encode(signature, StandardCharsets.UTF_8.name()) + "&se=" + expiry;
-
-        return token;
-    }
-
 
     //save time config from temp device
     public void saveTimeConfig() {
@@ -322,12 +337,16 @@ public class StartScreen extends AppCompatActivity implements RenameDialog.OnInp
                         } else if (rbHeater.isChecked()) {
                             deviceType = "heater";
                         }
-                        Device device = new Device(name, deviceType);
+                        Device device = new Device(name, deviceType, mac);
                         deviceViewModel.insert(device);
+                        //tvEmptyRecyclerView.setVisibility(View.INVISIBLE);
+                        Log.i(TAG, "name and type: " + name + ", " + deviceType);
                         Intent intent = new Intent(StartScreen.this, EspMainActivity.class);
+                        Bundle b = new Bundle();
+                        b.putString("name", name);
+                        b.putString("type", deviceType);
+                        intent.putExtras(b);
                         startActivity(intent);
-
-                        Log.i(TAG, "new device added: " + name + ", " + deviceType);
                     }
                 })
                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -376,6 +395,13 @@ public class StartScreen extends AppCompatActivity implements RenameDialog.OnInp
                 client.disconnect();
                 break;
 
+            case R.id.unProv:
+                try {
+                    removeProvisioning();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
         }
         return super.onOptionsItemSelected(item);
 
@@ -386,6 +412,7 @@ public class StartScreen extends AppCompatActivity implements RenameDialog.OnInp
     protected void onResume() {
         super.onResume();
         stopService();
+
     }
 
     public void stopService() {
@@ -501,6 +528,15 @@ public class StartScreen extends AppCompatActivity implements RenameDialog.OnInp
         }
     }
 
+    //remove provisioning from device
+    public void removeProvisioning() throws JSONException {
+        JSONObject object = new JSONObject();
+        object.put("reset", 0);
+        MqttMessage mqttMessage = new MqttMessage(object.toString().getBytes(StandardCharsets.UTF_8));
+        client.publish("iot-2/cmd/reset/fmt/json", mqttMessage);
+        Log.i(TAG, "published " + mqttMessage + "to " + "iot-2/cmd/reset/fmt/json");
+    }
+
     //interface method from RenameDialog to change device name
     @Override
     public void sendInput(String input, String type, int id) {
@@ -510,10 +546,11 @@ public class StartScreen extends AppCompatActivity implements RenameDialog.OnInp
             newName = input;
             deviceType = type;
             deviceId = id;
-            Device device = new Device(newName, deviceType);
+            Device device = new Device(newName, deviceType, mac);
             device.setId(deviceId);
             deviceViewModel.update(device);
             Toast.makeText(ins, "device name updated", Toast.LENGTH_SHORT).show();
+
         }
     }
 
@@ -528,7 +565,7 @@ public class StartScreen extends AppCompatActivity implements RenameDialog.OnInp
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0, activityIntent, 0);
 
         Notification notification = new NotificationCompat.Builder(this.getApplicationContext(), App.TEMPERATURE_NOTIFICATION)
-                .setSmallIcon(R.drawable.ic_baseline_check_box_24)
+                .setSmallIcon(R.drawable.ic_info)
                 .setContentTitle(title)
                 .setContentText(message)
                 .setAutoCancel(true)
@@ -540,10 +577,6 @@ public class StartScreen extends AppCompatActivity implements RenameDialog.OnInp
         Log.i(TAG, "sent notification");
 
     }
-
-    public void publish() throws MqttException {
-    }
-
 
     public void subscribe() throws MqttException {
         client.subscribe(TEMP_TOPIC, 0);
@@ -678,7 +711,6 @@ public class StartScreen extends AppCompatActivity implements RenameDialog.OnInp
                 Toast.makeText(StartScreen.this, "Connected to Cloud", Toast.LENGTH_SHORT).show();
                 try {
                     subscribe();
-                    getMqttClients();
                 } catch (MqttException e) {
                     e.printStackTrace();
                 }
@@ -694,29 +726,13 @@ public class StartScreen extends AppCompatActivity implements RenameDialog.OnInp
 
     }
 
-    public void getMqttClients() {
-        Call<JSONResponse> call = hiveDb.getMqttClients();
-        call.enqueue(new Callback<JSONResponse>() {
-            @Override
-            public void onResponse(Call<JSONResponse> call, Response<JSONResponse> response) {
-                JSONResponse jsonResponse = response.body();
-                if (!response.isSuccessful()) {
-                    Log.i(TAG, "JSONresponse not successfull, code: " + response.code());
-                    return;
-                }
-                List<MqttClient> clientList = new ArrayList<>(Arrays.asList(jsonResponse.getMqttClient()));
-                for (MqttClient m : clientList) {
-                    String content = "";
-                    content += "ID: " + m.getId();
-                    Log.i(TAG, content);
-                }
-            }
-
-            @Override
-            public void onFailure(Call<JSONResponse> call, Throwable t) {
-                Log.i(TAG, "onFailure: " + t.getCause() + t.getMessage());
-            }
-        });
+    @Override
+    public void deleteDevice() throws JSONException {
+        deviceViewModel.delete(device);
+        JSONObject object = new JSONObject();
+        object.put("reset", 0);
+        MqttMessage mqttMessage = new MqttMessage(object.toString().getBytes(StandardCharsets.UTF_8));
+        client.publish("iot-2/cmd/reset/fmt/json", mqttMessage);
+        Log.i(TAG, "published " + mqttMessage + "to " + "iot-2/cmd/reset/fmt/json");
     }
-
 }

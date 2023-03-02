@@ -46,20 +46,19 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         String deviceName = currentItem.getName();
         String deviceType = currentItem.getType();
 
-       holder.textView.setText(deviceName);
-        switch(deviceType){
+       holder.tvCardName.setText(deviceName);
+      /*  switch(deviceType){
             case "temperature":
-                holder.imageView.setImageResource(R.drawable.ic_thermostat);
+                holder.ivType.setImageResource(R.drawable.ic_thermostat);
                 break;
             case "heater":
-                holder.imageView.setImageResource(R.drawable.ic_car);
+                holder.ivType.setImageResource(R.drawable.ic_baseline_sync_24);
                 break;
             case "motion":
-                holder.imageView.setImageResource(R.drawable.ic_security);
+                holder.ivType.setImageResource(R.drawable.ic_security);
                 break;
 
-        }
-
+        }*/
 
         holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
@@ -88,17 +87,14 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
     public static class MyViewHolder extends RecyclerView.ViewHolder {
 
-        public TextView tvCardName, textView;
-        public ImageView ivType, imageView;
+        public TextView tvCardName;
+        public ImageView ivType;
 
         public MyViewHolder(@NonNull View itemView, OnItemClickListener listener) {
             super(itemView);
 
             tvCardName = itemView.findViewById(R.id.tvCardName);
             ivType = itemView.findViewById(R.id.ivType);
-            imageView = itemView.findViewById(R.id.imageView);
-            textView = itemView.findViewById(R.id.textView);
-
 
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override

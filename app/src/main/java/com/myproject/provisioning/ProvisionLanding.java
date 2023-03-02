@@ -59,6 +59,7 @@ public class ProvisionLanding extends AppCompatActivity {
     private ESPProvisionManager provisionManager;
     private int securityType;
     private String deviceName, pop;
+    private Bundle bundle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,6 +71,7 @@ public class ProvisionLanding extends AppCompatActivity {
         provisionManager = ESPProvisionManager.getInstance(getApplicationContext());
         initViews();
         EventBus.getDefault().register(this);
+        bundle = getIntent().getExtras();
     }
 
     @Override
@@ -287,17 +289,12 @@ public class ProvisionLanding extends AppCompatActivity {
         hasPermissions();
     }
 
-    private void goToPopActivity() {
-
-        finish();
-        Intent popIntent = new Intent(getApplicationContext(), ProofOfPossessionActivity.class);
-        startActivity(popIntent);
-    }
 
     private void goToWifiScanListActivity() {
 
         finish();
         Intent wifiListIntent = new Intent(getApplicationContext(), WiFiScanActivity.class);
+        wifiListIntent.putExtras(bundle);
         startActivity(wifiListIntent);
     }
 
@@ -305,6 +302,7 @@ public class ProvisionLanding extends AppCompatActivity {
 
         finish();
         Intent wifiConfigIntent = new Intent(getApplicationContext(), WiFiConfigActivity.class);
+        wifiConfigIntent.putExtras(bundle);
         startActivity(wifiConfigIntent);
     }
 

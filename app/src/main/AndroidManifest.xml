@@ -25,15 +25,13 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-
         <activity
             android:name=".ui.activities.HistoricalTempData"
-            android:exported="false" />
-        <activity
-            android:name=".ui.activities.TestActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".ui.activities.StartScreen"
+            android:screenOrientation="portrait"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -45,22 +43,9 @@
             android:name="com.myproject.provisioning.DeviceSettingsActivity"
             android:exported="false" />
         <activity
-            android:name=".ui.activities.HomeActivity"
-            android:exported="false" />
-        <activity
             android:name="com.myproject.provisioning.EspMainActivity"
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
             android:label="@string/title_activity_provision_landing"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity
-            android:name="com.myproject.provisioning.AddDeviceActivity"
-            android:label="@string/title_activity_provision_landing"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity
-            android:name="com.myproject.provisioning.BLEProvisionLanding"
-            android:label="@string/title_activity_connect_device"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
@@ -85,11 +70,6 @@
         <activity
             android:name="com.myproject.provisioning.WiFiScanActivity"
             android:label="@string/title_activity_wifi_scan_list"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity
-            android:name="com.myproject.provisioning.ProofOfPossessionActivity"
-            android:label="@string/title_activity_pop"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
 

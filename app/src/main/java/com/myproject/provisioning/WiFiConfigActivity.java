@@ -44,7 +44,7 @@ public class WiFiConfigActivity extends AppCompatActivity {
 
     private EditText etSsid, etPassword;
     private ESPProvisionManager provisionManager;
-
+    private Bundle bundle;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,6 +53,7 @@ public class WiFiConfigActivity extends AppCompatActivity {
         provisionManager = ESPProvisionManager.getInstance(getApplicationContext());
         initViews();
         EventBus.getDefault().register(this);
+        bundle = getIntent().getExtras();
     }
 
     @Override
@@ -141,6 +142,7 @@ public class WiFiConfigActivity extends AppCompatActivity {
         provisionIntent.putExtras(getIntent());
         provisionIntent.putExtra(AppConstants.KEY_WIFI_SSID, ssid);
         provisionIntent.putExtra(AppConstants.KEY_WIFI_PASSWORD, password);
+        provisionIntent.putExtras(bundle);
         startActivity(provisionIntent);
     }
 

@@ -54,6 +54,7 @@ public class EspMainActivity extends AppCompatActivity {
     private ImageView ivEsp;
     private SharedPreferences sharedPreferences;
     private String deviceType;
+    Bundle bundle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,6 +68,8 @@ public class EspMainActivity extends AppCompatActivity {
 
         sharedPreferences = getSharedPreferences(AppConstants.ESP_PREFERENCES, Context.MODE_PRIVATE);
         provisionManager = ESPProvisionManager.getInstance(getApplicationContext());
+
+        bundle = getIntent().getExtras();
     }
 
     @Override
@@ -82,7 +85,6 @@ public class EspMainActivity extends AppCompatActivity {
 
         deviceType = sharedPreferences.getString(AppConstants.KEY_DEVICE_TYPES,
                 AppConstants.DEVICE_TYPE_DEFAULT);
-        ivEsp.setImageResource(R.drawable.ic_baseline_graphic_eq_24);
 
     }
 
@@ -124,7 +126,7 @@ public class EspMainActivity extends AppCompatActivity {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
 
                 if (isLocationEnabled()) {
-                    addDeviceClick();
+                    startProvisioningFlow();
                 }
             }
         }
@@ -154,34 +156,9 @@ public class EspMainActivity extends AppCompatActivity {
                     return;
                 }
             }
-            addDeviceClick();
+            startProvisioningFlow();
         }
     };
-
-    private void addDeviceClick() {
-
-        if (BuildConfig.isQrCodeSupported) {
-
-            gotoQrCodeActivity();
-
-        } else {
-
-            if (deviceType.equals(AppConstants.DEVICE_TYPE_BLE) || deviceType.equals(AppConstants.DEVICE_TYPE_BOTH)) {
-
-                final BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
-                BluetoothAdapter bleAdapter = bluetoothManager.getAdapter();
-
-                if (!bleAdapter.isEnabled()) {
-                    Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                    startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-                } else {
-                    startProvisioningFlow();
-                }
-            } else {
-                startProvisioningFlow();
-            }
-        }
-    }
 
     private void startProvisioningFlow() {
 
@@ -189,67 +166,20 @@ public class EspMainActivity extends AppCompatActivity {
         final boolean isSec1 = sharedPreferences.getBoolean(AppConstants.KEY_SECURITY_TYPE, true);
         Log.d(TAG, "Device Types : " + deviceType);
         Log.d(TAG, "isSec1 : " + isSec1);
+
         int securityType = 0;
         if (isSec1) {
             securityType = 1;
         }
+        final int finalSecurityType = securityType;
 
-        if (deviceType.equals(AppConstants.DEVICE_TYPE_BLE)) {
-
-            if (isSec1) {
-                provisionManager.createESPDevice(ESPConstants.TransportType.TRANSPORT_BLE, ESPConstants.SecurityType.SECURITY_1);
-            } else {
-                provisionManager.createESPDevice(ESPConstants.TransportType.TRANSPORT_BLE, ESPConstants.SecurityType.SECURITY_0);
-            }
-            goToBLEProvisionLandingActivity(securityType);
-
-        } else if (deviceType.equals(AppConstants.DEVICE_TYPE_SOFTAP)) {
-
-            if (isSec1) {
-                provisionManager.createESPDevice(ESPConstants.TransportType.TRANSPORT_SOFTAP, ESPConstants.SecurityType.SECURITY_1);
-            } else {
-                provisionManager.createESPDevice(ESPConstants.TransportType.TRANSPORT_SOFTAP, ESPConstants.SecurityType.SECURITY_0);
-            }
-            goToWiFiProvisionLandingActivity(securityType);
-
+        if (isSec1) {
+            provisionManager.createESPDevice(ESPConstants.TransportType.TRANSPORT_SOFTAP, ESPConstants.SecurityType.SECURITY_1);
         } else {
-
-            final String[] deviceTypes = {"BLE", "SoftAP"};
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setCancelable(true);
-            builder.setTitle(R.string.dialog_msg_device_selection);
-            final int finalSecurityType = securityType;
-            builder.setItems(deviceTypes, new DialogInterface.OnClickListener() {
-
-                @Override
-                public void onClick(DialogInterface dialog, int position) {
-
-                    switch (position) {
-                        case 0:
-
-                            if (isSec1) {
-                                provisionManager.createESPDevice(ESPConstants.TransportType.TRANSPORT_BLE, ESPConstants.SecurityType.SECURITY_1);
-                            } else {
-                                provisionManager.createESPDevice(ESPConstants.TransportType.TRANSPORT_BLE, ESPConstants.SecurityType.SECURITY_0);
-                            }
-                            goToBLEProvisionLandingActivity(finalSecurityType);
-                            break;
-
-                        case 1:
-
-                            if (isSec1) {
-                                provisionManager.createESPDevice(ESPConstants.TransportType.TRANSPORT_SOFTAP, ESPConstants.SecurityType.SECURITY_1);
-                            } else {
-                                provisionManager.createESPDevice(ESPConstants.TransportType.TRANSPORT_SOFTAP, ESPConstants.SecurityType.SECURITY_0);
-                            }
-                            goToWiFiProvisionLandingActivity(finalSecurityType);
-                            break;
-                    }
-                    dialog.dismiss();
-                }
-            });
-            builder.show();
+            provisionManager.createESPDevice(ESPConstants.TransportType.TRANSPORT_SOFTAP, ESPConstants.SecurityType.SECURITY_0);
         }
+        goToWiFiProvisionLandingActivity(finalSecurityType);
+
     }
 
     private void askForLocation() {
@@ -301,22 +231,11 @@ public class EspMainActivity extends AppCompatActivity {
         return result;
     }
 
-    private void gotoQrCodeActivity() {
-        Intent intent = new Intent(EspMainActivity.this, AddDeviceActivity.class);
-        startActivity(intent);
-    }
-
-    private void goToBLEProvisionLandingActivity(int securityType) {
-
-        Intent intent = new Intent(EspMainActivity.this, BLEProvisionLanding.class);
-        intent.putExtra(AppConstants.KEY_SECURITY_TYPE, securityType);
-        startActivity(intent);
-    }
-
     private void goToWiFiProvisionLandingActivity(int securityType) {
 
         Intent intent = new Intent(EspMainActivity.this, ProvisionLanding.class);
         intent.putExtra(AppConstants.KEY_SECURITY_TYPE, securityType);
+        intent.putExtras(bundle);
         startActivity(intent);
     }
 }

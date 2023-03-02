@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape
+            android:innerRadius="0dp"
+            android:shape="ring"
+            android:thicknessRatio="2"
+            android:useLevel="false">
+
+        <solid android:color="#00000000"/>
+
+        <stroke
+            android:width="5dp"
+            android:color="@color/white"/>
+    </shape>
+    </item>
+
+    <item android:drawable="@drawable/icons8_internet_of_things_64"
+        android:bottom="@dimen/margin_10"
+        android:top="@dimen/margin_10"
+        android:left="@dimen/margin_10"
+        android:right="@dimen/margin_10"/>
+
+
+</layer-list>

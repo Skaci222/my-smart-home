@@ -13,22 +13,81 @@
         android:id="@+id/fragment_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="2"
-        android:layout_margin="@dimen/margin_8" />
+        android:background="@color/white"
+        android:layout_weight="3">
+
+        <ImageView
+            android:id="@+id/ivBackground"
+            android:layout_width="300dp"
+            android:layout_height="300dp"
+            android:layout_gravity="center"
+            android:alpha=".25"
+            android:background="@drawable/homi_1_3_" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+                android:id="@+id/floatingMenuBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentBottom="true"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="10dp"
+                android:layout_marginBottom="10dp"
+                android:backgroundTint="@color/colorPrimary"
+                android:textColor="@color/white"
+                app:icon="@drawable/ic_baseline_menu_24"
+                app:iconTint="@color/white" />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                app:fabCustomSize="40dp"
+                android:id="@+id/floatingAddBtn"
+                app:borderWidth="0dp"
+                android:layout_alignEnd="@+id/floatingMenuBtn"
+                android:layout_margin="@dimen/margin_10"
+                android:layout_above="@+id/floatingMenuBtn"
+                android:backgroundTint="#b7c1c3"
+                android:src="@drawable/ic_baseline_add_24" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/tvFabAdd"
+                android:text="Add Device"
+                android:layout_toLeftOf="@id/floatingAddBtn"
+                android:layout_above="@id/floatingMenuBtn"
+                android:layout_marginBottom="20dp"
+                android:layout_marginRight="8dp"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:fontFamily="sans-serif-black"/>
+
+
+
+        </RelativeLayout>
+
+
+    </FrameLayout>
 
 
     <LinearLayout
         android:id="@+id/relativeLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_margin="@dimen/margin_8"
-        android:layout_weight="6"
+        android:layout_weight="5"
+        android:elevation="5dp"
         android:orientation="vertical">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler_view"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:layout_margin="25dp"
+            android:scrollbars="vertical"/>
 
     </LinearLayout>
 

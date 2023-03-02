@@ -1,8 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/white">
 
+
+    <ImageView
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:id="@+id/ivTopIcon"
+        android:src="@drawable/chipset"
+        android:layout_margin="@dimen/margin_10"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textViewTitle"
+        android:text="No name"
+        android:layout_toRightOf="@id/ivTopIcon"
+        android:textAppearance="@style/TextAppearance.AppCompat.Caption"
+        android:layout_marginTop="15dp"
+        android:fontFamily="sans-serif-black"/>
 
     <TextView
         android:id="@+id/tvTemp"
@@ -11,8 +30,9 @@
         android:text="Temperature"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="100dp"
-        android:textAppearance="@style/TextAppearance.AppCompat.Large"
-        />
+        android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+        android:fontFamily="sans-serif-black"
+        android:textColor="@color/color_dark_gray"/>
 
     <TextView
         android:id="@+id/tvHumidity"
@@ -22,19 +42,22 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="30dp"
         android:text="Humidity"
-        android:textAppearance="@style/TextAppearance.AppCompat.Large"
-        />
+        android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+        android:fontFamily="sans-serif-black"
+        android:textColor="@color/color_dark_gray"/>
 
     <TextView
         android:id="@+id/tvTempValue"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="00.00"
+        android:text="----"
         android:layout_centerHorizontal="true"
         android:layout_below="@id/tvTemp"
         android:layout_marginTop="10dp"
         android:layout_marginLeft="15dp"
-        android:textSize="20sp" />
+        android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+        android:fontFamily="sans-serif-black"
+        android:textColor="@color/color_dark_gray"/>
 
     <TextView
         android:id="@+id/tvHumidityValue"
@@ -43,8 +66,90 @@
         android:layout_below="@id/tvHumidity"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="10dp"
-        android:text="00.00"
-        android:textSize="20sp" />
+        android:text="----"
+        android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+        android:fontFamily="sans-serif-black"
+        android:textColor="@color/color_dark_gray"/>
+
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/fabMenuTempFrag"
+        android:backgroundTint="@color/colorPrimary"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginBottom="@dimen/margin_10"
+        android:layout_marginRight="@dimen/margin_10"
+        android:layout_marginTop="@dimen/margin_10"
+        app:icon="@drawable/ic_baseline_menu_24"
+        app:iconTint="@color/white"/>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        app:fabCustomSize="40dp"
+        android:id="@+id/fabTimeConfig"
+        app:borderWidth="0dp"
+        android:backgroundTint="#b7c1c3"
+        android:layout_alignEnd="@id/fabMenuTempFrag"
+        android:layout_margin="@dimen/margin_10"
+        android:layout_above="@+id/fabMenuTempFrag"
+        android:src="@drawable/ic_alarm" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/fabTvTimeConfig"
+        android:layout_above="@id/fabMenuTempFrag"
+        android:text="Configure Time"
+        android:layout_toLeftOf="@id/fabTimeConfig"
+        android:layout_marginBottom="20dp"
+        android:fontFamily="sans-serif-black"/>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabTempData"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        app:fabCustomSize="40dp"
+        app:borderWidth="0dp"
+        android:layout_above="@+id/fabTimeConfig"
+        android:layout_alignEnd="@id/fabMenuTempFrag"
+        android:layout_margin="@dimen/margin_10"
+        android:backgroundTint="#b7c1c3"
+        android:src="@drawable/ic_baseline_auto_graph_24" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/fabTvTempData"
+        android:layout_above="@id/fabTimeConfig"
+        android:text="Historical Data"
+        android:layout_toLeftOf="@id/fabTempData"
+        android:layout_marginBottom="20dp"
+        android:fontFamily="sans-serif-black"/>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        app:fabCustomSize="40dp"
+        android:id="@+id/fabDeleteTempDevice"
+        app:borderWidth="0dp"
+        android:backgroundTint="#b7c1c3"
+        android:layout_alignEnd="@id/fabMenuTempFrag"
+        android:layout_margin="@dimen/margin_10"
+        android:layout_above="@+id/fabTempData"
+        android:src="@drawable/ic_baseline_delete_24"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/fabTvDeleteTempDevice"
+        android:layout_above="@id/fabTempData"
+        android:text="Detach Device"
+        android:layout_toLeftOf="@id/fabDeleteTempDevice"
+        android:layout_marginBottom="20dp"
+        android:fontFamily="sans-serif-black"/>
+
 
 
 </RelativeLayout>

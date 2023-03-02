@@ -23,6 +23,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.myproject.R;
 
@@ -40,14 +41,18 @@ public class HeaterFragment extends Fragment {
 
     public static final String STATUS = "status";
 
-    private FloatingActionButton btnTimePick;
-    private TextView tvStatus, tvShowTime;
+    private TextView tvStatus, tvShowTime, tvTimeTitle, tvTimeTitle2, fabTvDeleteDevice,fabTvRelayData,fabTvTimeConfig;
     TimePickerDialog.OnTimeSetListener listener;
     private Calendar c;
     private String heaterStatus;
     private String timeText;
     private SharedPreferences sharedPreferences;
     private SharedPreferences.Editor editor;
+    private DeleteDeviceListener deleteDeviceListener;
+    private ExtendedFloatingActionButton fabMenuRelayFrag;
+    private FloatingActionButton fabTimeConfig, fabRelayData,fabDeleteDevice;
+    private boolean isFabExtended = false;
+
 
 
     public static HeaterFragment newInstance(String status){
@@ -66,12 +71,84 @@ public class HeaterFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         View v = inflater.inflate(R.layout.heater_frag, container, false);
-        btnTimePick = v.findViewById(R.id.btnPickTime);
         tvStatus = v.findViewById(R.id.tvHeatOnOffStatus);
+        tvTimeTitle = v.findViewById(R.id.tvTimeTitle);
+        tvTimeTitle2 = v.findViewById(R.id.textView1);
         tvShowTime = v.findViewById(R.id.tvShowTime);
         c = Calendar.getInstance();
         sharedPreferences = getActivity().getSharedPreferences("shared_prefs", Context.MODE_PRIVATE);
         editor = sharedPreferences.edit();
+        fabMenuRelayFrag = v.findViewById(R.id.fabMenuRelayFrag);
+        fabTimeConfig = v.findViewById(R.id.fabTimeConfig);
+        fabRelayData = v.findViewById(R.id.fabRelayData);
+        fabDeleteDevice = v.findViewById(R.id.fabDeleteDevice);
+        fabTvTimeConfig = v.findViewById(R.id.fabTvTimeConfig);
+        fabTvRelayData = v.findViewById(R.id.fabTvRelayData);
+        fabTvDeleteDevice = v.findViewById(R.id.fabTvDeleteDevice);
+        fabTimeConfig.hide();
+        fabRelayData.hide();
+        fabDeleteDevice.hide();
+        fabTvTimeConfig.setVisibility(View.GONE);
+        fabTvRelayData.setVisibility(View.GONE);
+        fabTvDeleteDevice.setVisibility(View.GONE);
+        fabMenuRelayFrag.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(!isFabExtended){
+                    tvShowTime.setAlpha(0.1f);
+                    tvTimeTitle.setAlpha(0.1f);
+                    tvTimeTitle2.setAlpha(0.1f);
+                    tvStatus.setAlpha(0.1f);
+                    fabTimeConfig.show();
+                    fabTvTimeConfig.setVisibility(View.VISIBLE);
+                    fabRelayData.show();
+                    fabTvRelayData.setVisibility(View.VISIBLE);
+                    fabDeleteDevice.show();
+                    fabTvDeleteDevice.setVisibility(View.VISIBLE);
+                    isFabExtended = true;
+                } else{
+                    tvShowTime.setAlpha(1f);
+                    tvTimeTitle.setAlpha(1f);
+                    tvTimeTitle2.setAlpha(1f);
+                    tvStatus.setAlpha(1f);
+                    fabTimeConfig.hide();
+                    fabTvTimeConfig.setVisibility(View.GONE);
+                    fabRelayData.hide();
+                    fabTvRelayData.setVisibility(View.GONE);
+                    fabDeleteDevice.hide();
+                    fabTvDeleteDevice.setVisibility(View.GONE);
+                    isFabExtended = false;
+                }
+            }
+        });
+        fabTimeConfig.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                int hour = c.get(Calendar.HOUR_OF_DAY);
+                int minute = c.get(Calendar.MINUTE);
+                TimePickerDialog timePickerDialog = new TimePickerDialog(getActivity(), android.R.style.Theme_Holo_Light_Dialog_NoActionBar_MinWidth,
+                        listener, hour, minute, false);
+                timePickerDialog.show();
+            }
+        });
+        fabRelayData.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+            }
+        });
+        fabDeleteDevice.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                deleteDeviceListener = (DeleteDeviceListener) getActivity();
+                try {
+                    deleteDeviceListener.deleteDevice();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
 
         if(getArguments() != null){
             heaterStatus = getArguments().getString("status");
@@ -88,7 +165,7 @@ public class HeaterFragment extends Fragment {
         //}
 
 
-        btnTimePick.setOnClickListener(new View.OnClickListener() {
+       /* btnTimePick.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 int hour = c.get(Calendar.HOUR_OF_DAY);
@@ -97,7 +174,7 @@ public class HeaterFragment extends Fragment {
                         listener, hour, minute, false);
                 timePickerDialog.show();
             }
-        });
+        }); */
 
         listener = new TimePickerDialog.OnTimeSetListener() {
             @Override

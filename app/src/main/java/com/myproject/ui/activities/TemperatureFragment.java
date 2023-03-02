@@ -24,7 +24,10 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.preference.PreferenceManager;
 
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.myproject.R;
+import com.myproject.room.Device;
 import com.myproject.room.DeviceViewModel;
 import com.myproject.room.Message;
 import com.myproject.room.MessageViewModel;
@@ -37,6 +40,7 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.json.JSONException;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,7 +49,7 @@ import info.mqtt.android.service.MqttAndroidClient;
 
 public class TemperatureFragment extends Fragment  {
 
-    private TextView tvTempValue, tvHumidityValue, allValues;
+    private TextView tvTempValue, tvHumidityValue, deviceName;
 
     private RecyclerViewAdapter.MyViewHolder adapter;
     public static final String ARG_TEMP = "Temperature";
@@ -55,6 +59,17 @@ public class TemperatureFragment extends Fragment  {
     private SharedPreferences sharedPreferences;
     private SharedPreferences.Editor editor;
     private int itemSelected;
+    private String name;
+    private int id;
+    private String updatedName;
+    private ExtendedFloatingActionButton fabMenuTempFrag;
+    private FloatingActionButton fabTimeConfig, fabTempData, fabDeleteTempDevice;
+    private TextView fabTvTimeConfig, fabTvTempData, fabTvDeleteTempDevice, tvTemp, tvHumidity;
+    private boolean isFabExtended = false;
+    private Device device;
+
+    public DeleteDeviceListener deleteDeviceListener;
+
 
     public static TemperatureFragment newInstance(String temp, String humidity){
         Bundle args = new Bundle();
@@ -72,6 +87,72 @@ public class TemperatureFragment extends Fragment  {
 
         tvTempValue = v.findViewById(R.id.tvTempValue);
         tvHumidityValue = v.findViewById(R.id.tvHumidityValue);
+        tvTemp = v.findViewById(R.id.tvTemp);
+        tvHumidity = v.findViewById(R.id.tvHumidity);
+        deviceName = v.findViewById(R.id.textViewTitle);
+        fabMenuTempFrag = v.findViewById(R.id.fabMenuTempFrag);
+        fabTimeConfig = v.findViewById(R.id.fabTimeConfig);
+        fabTempData = v.findViewById(R.id.fabTempData);
+        fabDeleteTempDevice = v.findViewById(R.id.fabDeleteTempDevice);
+        fabTvTimeConfig = v.findViewById(R.id.fabTvTimeConfig);
+        fabTvTempData = v.findViewById(R.id.fabTvTempData);
+        fabTvDeleteTempDevice = v.findViewById(R.id.fabTvDeleteTempDevice);
+        fabTimeConfig.hide();
+        fabTempData.hide();
+        fabDeleteTempDevice.hide();
+        fabTvTimeConfig.setVisibility(View.GONE);
+        fabTvTempData.setVisibility(View.GONE);
+        fabTvDeleteTempDevice.setVisibility(View.GONE);
+
+        fabMenuTempFrag.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(!isFabExtended){
+                    tvTemp.setAlpha(0.1f);
+                    tvHumidity.setAlpha(0.1f);
+                    tvHumidityValue.setAlpha(0.1f);
+                    tvTempValue.setAlpha(0.1f);
+
+                    fabTimeConfig.show();
+                    fabTvTimeConfig.setVisibility(View.VISIBLE);
+                    fabTempData.show();
+                    fabTvTempData.setVisibility(View.VISIBLE);
+                    fabDeleteTempDevice.show();
+                    fabTvDeleteTempDevice.setVisibility(View.VISIBLE);
+                    isFabExtended = true;
+                } else {
+                    tvTemp.setAlpha(1f);
+                    tvHumidity.setAlpha(1f);
+                    tvHumidityValue.setAlpha(1f);
+                    tvTempValue.setAlpha(1f);
+                    fabTimeConfig.hide();
+                    fabTvTimeConfig.setVisibility(View.GONE);
+                    fabTempData.hide();
+                    fabTvTempData.setVisibility(View.GONE);
+                    fabDeleteTempDevice.hide();
+                    fabTvDeleteTempDevice.setVisibility(View.GONE);
+                    isFabExtended = false;
+                }
+            }
+        });
+        fabTempData.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent i = new Intent(getActivity(), HistoricalTempData.class);
+                startActivity(i);
+            }
+        });
+        fabDeleteTempDevice.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                deleteDeviceListener = (DeleteDeviceListener) getActivity();
+                try {
+                    deleteDeviceListener.deleteDevice();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
 
         //initial temp reading
         try {
@@ -87,7 +168,18 @@ public class TemperatureFragment extends Fragment  {
             humText = getArguments().getString(ARG_HUM);
             tvTempValue.setText(tempText);
             tvHumidityValue.setText(humText);
+            name = getArguments().getString("deviceName");
+            updatedName = getArguments().getString("newDeviceName");
+            deviceName.setText(name);
+
+            if(tempText == null){
+                tvTempValue.setText("------");
+            }
+            if(humText == null){
+                tvHumidityValue.setText("------");
+            }
        }
+
         setHasOptionsMenu(true);
 
         return v;
@@ -106,7 +198,6 @@ public class TemperatureFragment extends Fragment  {
             menu.findItem(R.id.updateTenMin).setChecked(true
             );
         }
-        Log.i("TAG", "item selected is " + itemSelected);
     }
 
     @Override
@@ -166,4 +257,5 @@ public class TemperatureFragment extends Fragment  {
 
         return super.onOptionsItemSelected(item);
     }
+
 }

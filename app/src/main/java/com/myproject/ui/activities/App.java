@@ -1,7 +1,5 @@
 package com.myproject.ui.activities;
 
-import static com.myproject.ui.activities.HomeActivity.isAppForeground;
-
 import android.app.Application;
 import android.app.Notification;
 import android.app.NotificationChannel;

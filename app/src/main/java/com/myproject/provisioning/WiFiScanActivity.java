@@ -58,6 +58,7 @@ public class WiFiScanActivity extends AppCompatActivity {
     private WiFiListAdapter adapter;
     private ArrayList<WiFiAccessPoint> wifiAPList;
     private ESPProvisionManager provisionManager;
+    private Bundle bundle;
 
 
     @Override
@@ -82,6 +83,8 @@ public class WiFiScanActivity extends AppCompatActivity {
         String wifiMsg = String.format(getString(R.string.setup_instructions), deviceName);
         TextView tvWifiMsg = findViewById(R.id.wifi_message);
         tvWifiMsg.setText(wifiMsg);
+
+        bundle = getIntent().getExtras();
 
         ivRefresh.setOnClickListener(refreshClickListener);
         adapter = new WiFiListAdapter(this, R.id.tv_wifi_name, wifiAPList);
@@ -287,6 +290,7 @@ public class WiFiScanActivity extends AppCompatActivity {
         provisionIntent.putExtras(getIntent());
         provisionIntent.putExtra(AppConstants.KEY_WIFI_SSID, ssid);
         provisionIntent.putExtra(AppConstants.KEY_WIFI_PASSWORD, password);
+        provisionIntent.putExtras(bundle);
         startActivity(provisionIntent);
     }
 

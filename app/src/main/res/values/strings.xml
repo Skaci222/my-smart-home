@@ -20,7 +20,7 @@
     <string name="btn_back">Back</string>
     <string name="btn_provision">Provision</string>
     <string name="btn_scan_qr_code">Scan QR Code</string>
-    <string name="btn_provision_device">Provision New Device</string>
+    <string name="btn_provision_device">Connect New Device</string>
     <string name="btn_connect">Connect</string>
     <string name="btn_connecting">Connecting&#8230;</string>
     <string name="btn_wifi_settings">Go to Wi-Fi Settings</string>
@@ -39,7 +39,7 @@
     <!-- Instruction Strings -->
     <string name="pop_instruction">Enter your proof of possession PIN for</string>
     <string name="setup_instructions">To complete setup of your device %1$s, please provide your Home Network\'s credentials.</string>
-    <string name="connect_device_instruction_general">To provision your device, make sure it is turned ON. Connect your mobile phone to the Wi-Fi network with a name like PROV_XXXXXX</string>
+    <string name="connect_device_instruction_general">To provision your device, make sure it is turned ON. Connect your mobile phone to the Wi-Fi network with a name like PROV_XXXXXX, then press the back button</string>
     <string name="connect_device_instruction_specific">To provision your device, make sure it is turned ON. Connect your mobile phone to the Wi-Fi network with the name</string>
 
     <!-- Provisioning Steps Strings -->

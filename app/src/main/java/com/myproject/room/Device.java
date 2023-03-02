@@ -6,6 +6,8 @@ import android.os.Parcelable;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
+import java.io.Serializable;
+
 @Entity(tableName = "device_table")
 public class Device {
     @PrimaryKey(autoGenerate = true)
@@ -13,10 +15,12 @@ public class Device {
 
     private String name;
     private String type;
+    private String mac;
 
-    public Device(String name, String type){
+    public Device(String name, String type, String mac){
         this.name = name;
         this.type = type;
+        this.mac = mac;
     }
 
     public int getId() {
@@ -43,4 +47,11 @@ public class Device {
         this.type = type;
     }
 
+    public String getMac() {
+        return mac;
+    }
+
+    public void setMac(String mac) {
+        this.mac = mac;
+    }
 }

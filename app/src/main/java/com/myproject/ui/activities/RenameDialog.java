@@ -24,7 +24,7 @@ import com.myproject.room.DeviceViewModel;
 
 public class RenameDialog extends DialogFragment {
     private EditText editText;
-    private DeviceViewModel deviceViewModel;
+    TemperatureFragment tempfrag;
 
     public interface OnInputListener{
         void sendInput(String input, String type, int id);
@@ -57,6 +57,7 @@ public class RenameDialog extends DialogFragment {
                         mListener.sendInput(name, type, id);
                         dismiss();
                         Toast.makeText(getActivity(), "OK", Toast.LENGTH_SHORT).show();
+
                     }
                 });
 

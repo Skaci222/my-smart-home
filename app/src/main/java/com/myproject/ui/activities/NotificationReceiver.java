@@ -15,7 +15,7 @@ public class NotificationReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         String message = intent.getStringExtra("temperature"); //should use Constants
         Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
-        TextView tv = HomeActivity.getInstance().findViewById(R.id.tvTemp);
+        TextView tv = StartScreen.getInstance().findViewById(R.id.tvTemp);
         tv.setText(message);
         Log.i("NotificationReceiver", "onRecieve");
 
