@@ -21,6 +21,7 @@
         android:layout_toRightOf="@id/ivTopIcon"
         android:textAppearance="@style/TextAppearance.AppCompat.Caption"
         android:layout_marginTop="15dp"
+        android:clickable="true"
         android:fontFamily="sans-serif-black"/>
 
     <TextView

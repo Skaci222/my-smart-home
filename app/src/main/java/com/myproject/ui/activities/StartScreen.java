@@ -1,33 +1,27 @@
 package com.myproject.ui.activities;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContract;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
@@ -40,7 +34,6 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -48,47 +41,29 @@ import com.google.android.material.floatingactionbutton.ExtendedFloatingActionBu
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.myproject.R;
 import com.myproject.provisioning.EspMainActivity;
-import com.myproject.provisioning.ProvisionLanding;
-import com.myproject.rest.HiveDb;
-import com.myproject.rest.JSONResponse;
-import com.myproject.rest.MqttClient;
 import com.myproject.room.Device;
 import com.myproject.room.DeviceViewModel;
 import com.myproject.room.Message;
 import com.myproject.room.MessageViewModel;
 import com.myproject.ui.adapters.RecyclerViewAdapter;
 
+import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.IMqttToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
+import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Base64;
 import java.util.List;
 
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-
-import info.mqtt.android.service.Ack;
-import info.mqtt.android.service.MqttAndroidClient;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Converter;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
-
-public class StartScreen extends AppCompatActivity implements RenameDialog.OnInputListener, DeleteDeviceListener {
+public class StartScreen extends AppCompatActivity implements RenameDialog.OnInputListener, DeleteDeviceListener, MqttCallbackExtended {
 
     public static final String TAG = "StartScreen: ";
     public static final String TAG_MQTT = "MQTT: ";
@@ -142,6 +117,9 @@ public class StartScreen extends AppCompatActivity implements RenameDialog.OnInp
     private SharedPreferences sharedPreferences;
     private SharedPreferences.Editor editor;
     private Device device;
+    private List<Message> allMessages = new ArrayList<>();
+    public MqttService mqttService;
+    private BroadcastReceiver onReceiver, offReceiver, messageReceiver;
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
@@ -149,6 +127,7 @@ public class StartScreen extends AppCompatActivity implements RenameDialog.OnInp
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start_screen);
         ins = this;
+        getSupportActionBar().hide();
 
         ivBackground = findViewById(R.id.ivBackground);
         tvAddDevice = findViewById(R.id.tvFabAdd);
@@ -159,49 +138,91 @@ public class StartScreen extends AppCompatActivity implements RenameDialog.OnInp
         menuBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-               if(!fabItemsVisible){
-                   ivBackground.setAlpha(0.1f);
-                   addBtn.show();
-                   tvAddDevice.setVisibility(View.VISIBLE);
-                   fabItemsVisible = true;
-               } else{
-                   ivBackground.setAlpha(.25f);
-                   addBtn.hide();
-                   tvAddDevice.setVisibility(View.GONE);
-                   fabItemsVisible = false;
-               }
+                if (!fabItemsVisible) {
+                    ivBackground.setAlpha(0.1f);
+                    addBtn.show();
+                    tvAddDevice.setVisibility(View.VISIBLE);
+                    fabItemsVisible = true;
+
+                } else {
+                    ivBackground.setAlpha(.25f);
+                    addBtn.hide();
+                    tvAddDevice.setVisibility(View.GONE);
+                    fabItemsVisible = false;
+                }
             }
         });
         addBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 initialDialog();
+                addBtn.hide();
+                tvAddDevice.setVisibility(View.GONE);
+                ivBackground.setAlpha(.25f);
             }
 
         });
 
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction("switch_on_notification");
+        onReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                try {
+                    mqttService.publish(RELAY_CONTROL_TOPIC, RELAY_VALUE, "1");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                } catch (MqttException e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+        registerReceiver(onReceiver, intentFilter);
+
+        IntentFilter intentFilter2 = new IntentFilter();
+        intentFilter2.addAction("switch_off_notification");
+        offReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                try {
+                    mqttService.publish(RELAY_CONTROL_TOPIC, RELAY_VALUE, "0");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                } catch (MqttException e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+        registerReceiver(offReceiver, intentFilter2);
+        mqttService = new MqttService(this, this);
+        try {
+            mqttService.connectMqtt();
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
         notificationManager = NotificationManagerCompat.from(this);
         clientId = "AndroidDevice";
         // clientId = "a:y94ieb:andId-001";
-        client = new MqttAndroidClient(getApplicationContext(), HIVE_BROKER,
-                clientId, Ack.AUTO_ACK);
         mRecyclerView = findViewById(R.id.recycler_view);
         layoutManager = new GridLayoutManager(this, 3);
         mRecyclerViewAdapter = new RecyclerViewAdapter();
         mRecyclerView.setLayoutManager(layoutManager);
         mRecyclerView.setAdapter(mRecyclerViewAdapter);
         tempfrag = new TemperatureFragment();
+        heaterFrag = new HeaterFragment();
+
 
         mRecyclerViewAdapter.setOnItemClickListener(new RecyclerViewAdapter.OnItemClickListener() {
             @Override
-            public void onItemClick(int position) {
+            public void onItemClick(int position) throws InterruptedException, JSONException, MqttException {
                 device = mRecyclerViewAdapter.getDeviceAt(position);
                 String deviceName = mRecyclerViewAdapter.getDeviceAt(position).getName();
                 deviceId = mRecyclerViewAdapter.getDeviceAt(position).getId();
                 Bundle b = new Bundle();
                 b.putString("deviceName", deviceName);
                 b.putInt("id", deviceId);
-                tempfrag = new TemperatureFragment();
+                b.putParcelable("mqtt", mqttService);
+                heaterFrag.setArguments(b);
                 tempfrag.setArguments(b);
 
 
@@ -209,32 +230,25 @@ public class StartScreen extends AppCompatActivity implements RenameDialog.OnInp
                     if (tempfrag != null && tempfrag.isAdded()) {
                         getSupportFragmentManager().popBackStack();
                     }
-                    heaterFrag = new HeaterFragment();
                     getSupportFragmentManager().beginTransaction()
-                            .add(R.id.fragment_layout, heaterFrag, "heaterFrag")
-                            .addToBackStack("heaterFrag")
+                            .replace(R.id.fragment_layout, heaterFrag)
+                            .addToBackStack(null)
                             .commit();
+                    mqttService.subscribe(RELAY_STATUS_TOPIC);
+                    mqttService.publish(RELAY_VALUE, "relay", "relay message");
 
-                    try {
-                        heaterStatusRequest();
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
                 } else if (mRecyclerViewAdapter.getDeviceAt(position).getType().equals("temperature")) {
                     if (heaterFrag != null && heaterFrag.isAdded()) {
                         getSupportFragmentManager().popBackStack();
                     }
                     getSupportFragmentManager().beginTransaction()
                             .replace(R.id.fragment_layout, tempfrag)
-                            .addToBackStack("tempFrag")
+                            .addToBackStack(null)
                             .commit();
-                    try {
-                        initRequest();
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    } catch (MqttException e) {
-                        e.printStackTrace();
-                    }
+                    mqttService.subscribe(TEMP_TOPIC);
+                    mqttService.subscribe("iot-2/evt/temperature/fmt/json");
+                    mqttService.publish("iot-2/cmd/temp/fmt/json", "request", "1");
+
                 } else {
                     Toast.makeText(StartScreen.this, "can't open next screen", Toast.LENGTH_SHORT).show();
                 }
@@ -255,22 +269,11 @@ public class StartScreen extends AppCompatActivity implements RenameDialog.OnInp
             }
         });
 
-        loadTimeConfig();
-        //updateViews();
-
         deviceViewModel = new ViewModelProvider(this).get(DeviceViewModel.class);
         deviceViewModel.getAllDevices().observe(this, new Observer<List<Device>>() {
             @Override
             public void onChanged(List<Device> devices) {
                 mRecyclerViewAdapter.setDevices(devices);
-            }
-        });
-
-        messageViewModel = new ViewModelProvider(this).get(MessageViewModel.class);
-        messageViewModel.getAllMessages().observe(this, new Observer<List<Message>>() {
-            @Override
-            public void onChanged(List<Message> messages) {
-
             }
         });
 
@@ -284,29 +287,17 @@ public class StartScreen extends AppCompatActivity implements RenameDialog.OnInp
 
             @Override
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-                deviceViewModel.delete(mRecyclerViewAdapter.getDeviceAt(viewHolder.getBindingAdapterPosition()));
+                deviceViewModel.delete(mRecyclerViewAdapter.getDeviceAt(viewHolder.getAdapterPosition()));
                 Toast.makeText(StartScreen.this, "Note deleted", Toast.LENGTH_SHORT).show();
             }
         }).attachToRecyclerView(mRecyclerView);
 
-       /* try {
-            customSasToken = generateSasToken("KACI.azure-devices.net", "8lIhminu5ggTCZhRQJ8XRCZCLnangmrZ6z776ibcmGM=");
-            Log.i(TAG, "generated custom SAS token: " + customSasToken);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }*/
-
-        try {
+      /* try {
             connectMQTT();
         } catch (MqttException e) {
             e.printStackTrace();
-        }
-    }
+        }*/
 
-    //save time config from temp device
-    public void saveTimeConfig() {
-        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS, MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
     }
 
     //load time config for temp device
@@ -361,9 +352,9 @@ public class StartScreen extends AppCompatActivity implements RenameDialog.OnInp
 
     }
 
-    public static StartScreen getInstance() {
+   /* public static StartScreen getInstance() {
         return ins;
-    }
+    }*/
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -392,13 +383,19 @@ public class StartScreen extends AppCompatActivity implements RenameDialog.OnInp
                 break;
 
             case R.id.disconnect:
-                client.disconnect();
+                try {
+                    client.disconnect();
+                } catch (MqttException e) {
+                    e.printStackTrace();
+                }
                 break;
 
             case R.id.unProv:
                 try {
                     removeProvisioning();
                 } catch (JSONException e) {
+                    e.printStackTrace();
+                } catch (MqttException e) {
                     e.printStackTrace();
                 }
 
@@ -436,6 +433,13 @@ public class StartScreen extends AppCompatActivity implements RenameDialog.OnInp
         }
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Intent serviceIntent = (new Intent(this, MyService.class));
+        stopService(serviceIntent);
+    }
+
     //check if app is in foreground
     public static boolean isAppForeground(Context context) {
         ActivityManager mActivityManager = (ActivityManager) context.getSystemService(
@@ -462,7 +466,7 @@ public class StartScreen extends AppCompatActivity implements RenameDialog.OnInp
         requestObject.put("temperature", 1);
         requestObject.put("humidity", 1);
         MqttMessage mqttMessage = new MqttMessage(requestObject.toString().getBytes(StandardCharsets.UTF_8));
-        client.publish(TEMP_STATUS, mqttMessage);
+        //client.publish(TEMP_STATUS, mqttMessage);
     }
 
     //check if heater is currently on or off
@@ -470,11 +474,11 @@ public class StartScreen extends AppCompatActivity implements RenameDialog.OnInp
         JSONObject statusRequest = new JSONObject();
         statusRequest.put(RELAY_VALUE, "1"); //String or int for value? What is key?
         MqttMessage mqttMessage = new MqttMessage(statusRequest.toString().getBytes(StandardCharsets.UTF_8));
-        client.publish(RELAY_REQUEST_TOPIC, mqttMessage);
+        //client.publish(RELAY_REQUEST_TOPIC, mqttMessage);
     }
 
     //request to turn heater on or off
-    public void heaterControl(int control) throws JSONException {
+    public void heaterControl(int control) throws JSONException, MqttException {
         switch (control) {
             case 1:
                 JSONObject heaterOn = new JSONObject();
@@ -495,7 +499,7 @@ public class StartScreen extends AppCompatActivity implements RenameDialog.OnInp
     }
 
     //request to update temperature values at certain times
-    public void timeConfig(int time) throws JSONException {
+    public void timeConfig(int time) throws JSONException, MqttException {
         String timeInterval;
         switch (time) {
             case 1:
@@ -529,12 +533,13 @@ public class StartScreen extends AppCompatActivity implements RenameDialog.OnInp
     }
 
     //remove provisioning from device
-    public void removeProvisioning() throws JSONException {
+    public void removeProvisioning() throws JSONException, MqttException {
         JSONObject object = new JSONObject();
         object.put("reset", 0);
         MqttMessage mqttMessage = new MqttMessage(object.toString().getBytes(StandardCharsets.UTF_8));
         client.publish("iot-2/cmd/reset/fmt/json", mqttMessage);
         Log.i(TAG, "published " + mqttMessage + "to " + "iot-2/cmd/reset/fmt/json");
+
     }
 
     //interface method from RenameDialog to change device name
@@ -645,40 +650,6 @@ public class StartScreen extends AppCompatActivity implements RenameDialog.OnInp
                 }
 
                 Log.i(TAG_MQTT, "message arrived: " + myMessage);
-
-                //IBM broker
-                /*switch (topic) {
-                    case TEMP_TOPIC:
-                        mTemperature = myMessage.getString("Temperature");
-                        mTemperature = mTemperature.substring(0, 5);
-                        mHumidity = myMessage.getString("Humidity");
-                        mHumidity = mHumidity.substring(0, 5);
-
-                        temperatureFragment = TemperatureFragment.newInstance(mTemperature, mHumidity);
-                        Log.i(TAG, "temperature is : " + mTemperature);
-                        Log.i(TAG, "humidity is : " + mHumidity);
-                        getSupportFragmentManager().beginTransaction().replace(
-                                        R.id.fragment_layout, temperatureFragment)
-                                .addToBackStack("tempFrag")
-                                .commit();
-                        Message message1 = new Message(mTemperature);
-                        //Message message2 = new Message(mHumidity);
-                        messageViewModel.insert(message1);
-                        //messageViewModel.insert(message2);
-
-
-                        if (!isAppForeground(getApplicationContext())) {
-                            sendTempNotification();
-                        } else return;
-
-                    case ALARM_TOPIC:
-                        if (!isAppForeground(getApplicationContext())) {
-                            sendTempNotification();
-                        } else return;
-                        break;
-
-                    default:
-                }*/
             }
 
             @Override
@@ -695,8 +666,6 @@ public class StartScreen extends AppCompatActivity implements RenameDialog.OnInp
         options.setCleanSession(true);
         // options.setUserName("a-y94ieb-avdxw7gowr");
         // options.setPassword("@mcEx)FCK?RdA98czQ".toCharArray());
-        //options.setUserName("KACI.azure-devices.net/AndroidDevice/?api-version=2021-04-12");
-        //options.setPassword(customSasToken.toCharArray());
         options.setUserName("maji22");
         options.setPassword("password".toCharArray());
 
@@ -727,12 +696,77 @@ public class StartScreen extends AppCompatActivity implements RenameDialog.OnInp
     }
 
     @Override
-    public void deleteDevice() throws JSONException {
+    public void deleteDevice() throws JSONException, MqttException {
         deviceViewModel.delete(device);
-        JSONObject object = new JSONObject();
-        object.put("reset", 0);
-        MqttMessage mqttMessage = new MqttMessage(object.toString().getBytes(StandardCharsets.UTF_8));
-        client.publish("iot-2/cmd/reset/fmt/json", mqttMessage);
-        Log.i(TAG, "published " + mqttMessage + "to " + "iot-2/cmd/reset/fmt/json");
+        mqttService.publish("iot-2/cmd/reset/fmt/json", "reset", "0");
+        getSupportFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+
+    }
+
+    @Override
+    public void connectComplete(boolean reconnect, String serverURI) {
+        Log.i(TAG, "connected from StartScreen");
+    }
+
+    @Override
+    public void connectionLost(Throwable cause) {
+        Log.i(TAG, "connection lost");
+    }
+
+    @Override
+    public void messageArrived(String topic, MqttMessage message) throws Exception {
+        Log.i(TAG, "message arrived: " +message + "from topic: " +topic);
+        int mTemperature;
+        String mHumidity;
+        String mRelayValue;
+        TemperatureFragment temperatureFragment;
+        HeaterFragment heaterFragment;
+
+        JSONObject myMessage = new JSONObject(new String(message.getPayload()));
+
+        switch (topic) {
+            case RELAY_STATUS_TOPIC:
+                mRelayValue = myMessage.getString("Relay");
+                if (mRelayValue.contains("1")) {
+                    Toast.makeText(StartScreen.this, "heater is currently on", Toast.LENGTH_SHORT).show();
+                    Log.i(TAG, "heater is on");
+                    heaterFragment = HeaterFragment.newInstance("1");
+                    getSupportFragmentManager().beginTransaction().replace(
+                                    R.id.fragment_layout, heaterFragment).addToBackStack("heaterFrag")
+                            .commit();
+
+                } else if (mRelayValue.contains("0")) {
+                    Log.i(TAG, "heater is off");
+                    Toast.makeText(StartScreen.this, "heater is currently off", Toast.LENGTH_SHORT).show();
+                    heaterFragment = HeaterFragment.newInstance("0");
+                    getSupportFragmentManager().beginTransaction().replace(
+                                    R.id.fragment_layout, heaterFragment).addToBackStack("heaterFrag")
+                            .commit();
+                }
+            case "iot-2/evt/temperature/fmt/json":
+                mTemperature = myMessage.getInt("Temperature");
+                //mTemperature = mTemperature.substring(0, 5);
+                //mHumidity = myMessage.getString("Humidity");
+                //mHumidity = mHumidity.substring(0, 5);
+
+                temperatureFragment = TemperatureFragment.newInstance(mTemperature);
+                Log.i(TAG, "temperature is : " + mTemperature);
+                //Log.i(TAG, "humidity is : " + mHumidity);
+                getSupportFragmentManager().beginTransaction().replace(
+                                R.id.fragment_layout, temperatureFragment)
+                        .addToBackStack("tempFrag")
+                        .commit();
+
+                if (!isAppForeground(getApplicationContext())) {
+                    sendTempNotification();
+                } else return;
+        }
+
+
+    }
+
+    @Override
+    public void deliveryComplete(IMqttDeliveryToken token) {
+        Log.i(TAG, "delivered the message");
     }
 }

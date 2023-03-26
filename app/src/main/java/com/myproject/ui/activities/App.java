@@ -28,9 +28,6 @@ import org.json.JSONObject;
 
 import java.nio.charset.StandardCharsets;
 
-import info.mqtt.android.service.Ack;
-import info.mqtt.android.service.MqttAndroidClient;
-
 public class App extends Application {
 
 

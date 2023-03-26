@@ -29,6 +29,8 @@ public class MyService extends Service {
         String message = "Foreground service activated";
 
         Intent notificationIntent = new Intent(this, StartScreen.class);
+        notificationIntent.setAction(Intent.ACTION_MAIN);
+        notificationIntent.addCategory(Intent.CATEGORY_LAUNCHER);
         PendingIntent contentIntent = PendingIntent.getActivity(
                 this, 1, notificationIntent, 0);
 
@@ -43,6 +45,7 @@ public class MyService extends Service {
                 .build();
         startForeground(1, notification);
         Log.i(TAG, "service notification sent");
+
     }
 
     public void sendTempNotification() {

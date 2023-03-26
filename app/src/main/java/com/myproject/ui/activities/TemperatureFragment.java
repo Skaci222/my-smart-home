@@ -1,10 +1,18 @@
 package com.myproject.ui.activities;
 
+import static com.myproject.ui.activities.StartScreen.PUB_CONTROL_TOPIC;
+import static com.myproject.ui.activities.StartScreen.RELAY_CONTROL_TOPIC;
+import static com.myproject.ui.activities.StartScreen.TEMP_STATUS;
+import static com.myproject.ui.activities.StartScreen.TIME_INTERVAL;
+
+import android.app.AlertDialog;
 import android.app.FragmentContainer;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -14,6 +22,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.RadioButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -44,8 +53,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import info.mqtt.android.service.Ack;
-import info.mqtt.android.service.MqttAndroidClient;
 
 public class TemperatureFragment extends Fragment  {
 
@@ -56,6 +63,7 @@ public class TemperatureFragment extends Fragment  {
     public static final String ARG_HUM = "Humidity";
     private String tempText;
     private String humText;
+    private int tempValue;
     private SharedPreferences sharedPreferences;
     private SharedPreferences.Editor editor;
     private int itemSelected;
@@ -66,9 +74,10 @@ public class TemperatureFragment extends Fragment  {
     private FloatingActionButton fabTimeConfig, fabTempData, fabDeleteTempDevice;
     private TextView fabTvTimeConfig, fabTvTempData, fabTvDeleteTempDevice, tvTemp, tvHumidity;
     private boolean isFabExtended = false;
-    private Device device;
-
+    private AlertDialog dialog;
+    private MqttService mqttService;
     public DeleteDeviceListener deleteDeviceListener;
+
 
 
     public static TemperatureFragment newInstance(String temp, String humidity){
@@ -76,6 +85,13 @@ public class TemperatureFragment extends Fragment  {
         TemperatureFragment fragment = new TemperatureFragment();
         args.putString(ARG_TEMP, temp);
         args.putString(ARG_HUM, humidity);
+        fragment.setArguments(args);
+        return fragment;
+    }
+    public static TemperatureFragment newInstance(int temp){
+        Bundle args = new Bundle();
+        TemperatureFragment fragment = new TemperatureFragment();
+        args.putInt(ARG_TEMP, temp);
         fragment.setArguments(args);
         return fragment;
     }
@@ -140,6 +156,17 @@ public class TemperatureFragment extends Fragment  {
             public void onClick(View view) {
                 Intent i = new Intent(getActivity(), HistoricalTempData.class);
                 startActivity(i);
+
+                fabTimeConfig.hide();
+                fabTvTimeConfig.setVisibility(View.GONE);
+                fabTempData.hide();
+                fabTvTempData.setVisibility(View.GONE);
+                fabDeleteTempDevice.hide();
+                fabTvDeleteTempDevice.setVisibility(View.GONE);
+                tvTemp.setAlpha(1f);
+                tvHumidity.setAlpha(1f);
+                tvHumidityValue.setAlpha(1f);
+                tvTempValue.setAlpha(1f);
             }
         });
         fabDeleteTempDevice.setOnClickListener(new View.OnClickListener() {
@@ -150,112 +177,104 @@ public class TemperatureFragment extends Fragment  {
                     deleteDeviceListener.deleteDevice();
                 } catch (JSONException e) {
                     e.printStackTrace();
+                } catch (MqttException e) {
+                    e.printStackTrace();
                 }
+
+                fabTimeConfig.hide();
+                fabTvTimeConfig.setVisibility(View.GONE);
+                fabTempData.hide();
+                fabTvTempData.setVisibility(View.GONE);
+                fabDeleteTempDevice.hide();
+                fabTvDeleteTempDevice.setVisibility(View.GONE);
+                tvTemp.setAlpha(1f);
+                tvHumidity.setAlpha(1f);
+                tvHumidityValue.setAlpha(1f);
+                tvTempValue.setAlpha(1f);
+            }
+        });
+        fabTimeConfig.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                View v = getActivity().getLayoutInflater().inflate(R.layout.time_config_temp_dialog, null);
+
+                RadioButton rbOneMin, rbFiveMin, rbTenMin;
+                rbOneMin = v.findViewById(R.id.rbOneMin);
+                rbFiveMin = v.findViewById(R.id.rbFiveMin);
+                rbTenMin = v.findViewById(R.id.rbTenMin);
+
+                builder.setView(v)
+                        .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                if(rbOneMin.isChecked()){
+                                    rbOneMin.setChecked(true);
+                                    try {
+                                        mqttService.publish(PUB_CONTROL_TOPIC, TIME_INTERVAL, "1");
+                                    } catch (JSONException | MqttException e) {
+                                        e.printStackTrace();
+                                    }
+                                } else if (rbFiveMin.isChecked()){
+                                    rbFiveMin.setChecked(true);
+                                    try {
+                                        mqttService.publish(PUB_CONTROL_TOPIC, TIME_INTERVAL, "5");
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    } catch (MqttException e) {
+                                        e.printStackTrace();
+                                    }
+                                } else if (rbTenMin.isChecked()){
+                                    rbOneMin.setChecked(true);
+                                    try {
+                                        mqttService.publish(PUB_CONTROL_TOPIC, TIME_INTERVAL, "10");
+                                    } catch (JSONException | MqttException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            }
+                        })
+                        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                dialog.dismiss();
+                            }
+                        });
+                dialog = builder.create();
+                dialog.show();
+
+                fabTimeConfig.hide();
+                fabTvTimeConfig.setVisibility(View.GONE);
+                fabTempData.hide();
+                fabTvTempData.setVisibility(View.GONE);
+                fabDeleteTempDevice.hide();
+                fabTvDeleteTempDevice.setVisibility(View.GONE);
+                tvTemp.setAlpha(1f);
+                tvHumidity.setAlpha(1f);
+                tvHumidityValue.setAlpha(1f);
+                tvTempValue.setAlpha(1f);
             }
         });
 
-        //initial temp reading
-        try {
-            StartScreen.getInstance().initRequest();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        } catch (MqttException e) {
-            e.printStackTrace();
-        }
-
         if(getArguments() != null){
-            tempText = getArguments().getString(ARG_TEMP);
+            tempValue = getArguments().getInt(ARG_TEMP);
             humText = getArguments().getString(ARG_HUM);
+            tempText = String.valueOf(tempValue);
             tvTempValue.setText(tempText);
             tvHumidityValue.setText(humText);
             name = getArguments().getString("deviceName");
-            updatedName = getArguments().getString("newDeviceName");
+            updatedName = getArguments().getString("updatedName");
             deviceName.setText(name);
-
+            mqttService = getArguments().getParcelable("mqtt");
             if(tempText == null){
-                tvTempValue.setText("------");
+                tvTempValue.setText("----");
             }
             if(humText == null){
-                tvHumidityValue.setText("------");
+                tvHumidityValue.setText("----");
             }
        }
 
-        setHasOptionsMenu(true);
-
         return v;
-    }
-
-    @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        inflater.inflate(R.menu.menu_temp_frag, menu);
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        itemSelected = sharedPreferences.getInt("timePrefs", itemSelected);
-        if(itemSelected == 1){
-            menu.findItem(R.id.updateOneMin).setChecked(true);
-        } else if(itemSelected == 5){
-            menu.findItem(R.id.updateFiveMin).setChecked(true);
-        } else if(itemSelected == 10){
-            menu.findItem(R.id.updateTenMin).setChecked(true
-            );
-        }
-    }
-
-    @Override
-    public void onPrepareOptionsMenu(@NonNull Menu menu) {
-        super.onPrepareOptionsMenu(menu);
-        menu.findItem(R.id.actionAddDevice).setVisible(false);
-        menu.findItem(R.id.disconnect).setVisible(false);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-
-        int id = item.getItemId();
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        editor = sharedPreferences.edit();
-
-        switch (id){
-            case R.id.updateOneMin:
-                try {
-                    item.setChecked(true);
-                    StartScreen.getInstance().timeConfig(1);
-                    itemSelected = 1;
-                    editor.putInt("timePrefs", itemSelected);
-                    editor.commit();
-                    return true;
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                break;
-
-            case R.id.updateFiveMin:
-                try {
-                    item.setChecked(true);
-                    StartScreen.getInstance().timeConfig(5);
-                    itemSelected = 5;
-                    editor.putInt("timePrefs", itemSelected);
-                    editor.commit();
-                    return true;
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                break;
-
-            case R.id.updateTenMin:
-                try {
-                    item.setChecked(true);
-                    StartScreen.getInstance().timeConfig(10);
-                    itemSelected = 10;
-                    editor.putInt("timePrefs", itemSelected);
-                    editor.commit();
-                    return true;
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                break;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 
 }

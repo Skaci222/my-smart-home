@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/tvTempCongig"
+        android:text="How Often Would You Like Temperature Updates?"
+        android:layout_centerHorizontal="true"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        android:fontFamily="sans-serif-black"
+        android:textAlignment="center"
+        android:layout_margin="@dimen/margin_10"/>
+
+    <RadioGroup
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/rgTimeConfig"
+        android:layout_below="@id/tvTempCongig"
+        android:layout_margin="@dimen/margin_10">
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/rbOneMin"
+            android:text="1 minute"
+            android:fontFamily="sans-serif-black"/>
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/rbFiveMin"
+            android:text="5 minutes"
+            android:fontFamily="sans-serif-black"/>
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/rbTenMin"
+            android:text="10 minutes"
+            android:fontFamily="sans-serif-black"/>
+
+
+    </RadioGroup>
+
+
+
+
+</RelativeLayout>

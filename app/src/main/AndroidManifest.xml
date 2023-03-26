@@ -20,19 +20,19 @@
     <application
         android:name=".ui.activities.App"
         android:allowBackup="true"
-        android:icon="@drawable/ic_lock"
-        android:label=""
+        android:icon="@drawable/icons8_internet_of_things_64"
+        android:label="Homi"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
         <activity
             android:name=".ui.activities.HistoricalTempData"
             android:exported="false"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait" />
         <activity
             android:name=".ui.activities.StartScreen"
-            android:screenOrientation="portrait"
-            android:exported="true">
+            android:exported="true"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -74,6 +74,7 @@
             android:theme="@style/AppTheme.NoActionBar" />
 
         <service android:name=".ui.activities.MyService" />
+        <service android:name="org.eclipse.paho.android.service.MqttService" />
 
         <receiver android:name=".ui.activities.NotificationReceiver" />
         <receiver android:name=".ui.activities.AlertReceiver" />

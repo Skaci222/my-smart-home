@@ -9,10 +9,17 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.myproject.R;
 import com.myproject.room.Device;
+import com.myproject.room.Message;
+import com.myproject.room.MessageViewModel;
+import com.myproject.ui.activities.StartScreen;
+
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.json.JSONException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,9 +28,10 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
     private List<Device> mDeviceItems = new ArrayList<>();
     private OnItemClickListener mListener;
+    private MessageViewModel messageViewModel;
 
     public interface OnItemClickListener {
-        void onItemClick(int position);
+        void onItemClick(int position) throws JSONException, InterruptedException, MqttException;
 
         void onItemLongClick(Device device);
     }
@@ -69,6 +77,8 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
             }
         });
 
+        //messageViewModel = new ViewModelProvider(StartScreen.getInstance()).get(MessageViewModel.class);
+
     }
 
     @Override
@@ -80,6 +90,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         mDeviceItems = devices;
         notifyDataSetChanged();
     }
+
 
     public Device getDeviceAt(int position) {
         return mDeviceItems.get(position);
@@ -100,9 +111,17 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
                 @Override
                 public void onClick(View view) {
                     if (listener != null) {
-                        int position = getBindingAdapterPosition();
+                        int position = getAdapterPosition();
                         if (position != RecyclerView.NO_POSITION) {
-                            listener.onItemClick(position);
+                            try {
+                                listener.onItemClick(position);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            } catch (MqttException e) {
+                                e.printStackTrace();
+                            }
                         }
                     }
                 }
