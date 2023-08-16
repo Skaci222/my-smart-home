@@ -15,7 +15,7 @@
         android:padding="8dp">
 
         <TextView
-            android:id="@+id/tvCardName"
+            android:id="@+id/tvTempDeviceName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="16dp"
@@ -23,10 +23,11 @@
             android:textAppearance="@style/TextAppearance.AppCompat.Large" />
 
         <ImageView
-            android:id="@+id/ivType"
+            android:id="@+id/thermostat_image"
             android:layout_width="30dp"
             android:layout_height="30dp"
             android:layout_alignParentEnd="true"
+            android:src="@drawable/ic_baseline_device_thermostat_24"
             android:layout_margin="16dp" />
 
     </RelativeLayout>

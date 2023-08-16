@@ -105,7 +105,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
             super(itemView);
 
             tvCardName = itemView.findViewById(R.id.tvCardName);
-            ivType = itemView.findViewById(R.id.ivType);
+            //ivType = itemView.findViewById(R.id.ivType);
 
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override

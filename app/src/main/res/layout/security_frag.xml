@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+
+    <ImageView
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:id="@+id/ivTopIcon"
+        android:src="@drawable/chipset"
+        android:layout_margin="@dimen/margin_10"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textViewTitle"
+        android:text="No name"
+        android:layout_toRightOf="@id/ivTopIcon"
+        android:textAppearance="@style/TextAppearance.AppCompat.SearchResult.Title"
+        android:layout_marginTop="25dp"
+        android:fontFamily="sans-serif"/>
+
+    <TextView
+        android:id="@+id/tvHeatOnOffStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="10dp"
+        android:fontFamily="sans-serif-black"
+        android:text="Status: DISARMED "
+        android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+
+
+    <TextView
+        android:id="@+id/tvTimeTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:layout_above="@+id/tvShowTime"
+        android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+        android:text="Device will be armed at" />
+
+    <TextView
+        android:id="@+id/tvShowTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:text="00:00"
+        android:layout_margin="20dp"
+        android:textStyle="bold"
+        android:textAppearance="@style/TextAppearance.AppCompat.Headline" />
+
+
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/fabMenuRelayFrag"
+        android:backgroundTint="@color/colorPrimary"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginBottom="@dimen/margin_10"
+        android:layout_marginRight="@dimen/margin_10"
+        android:layout_marginTop="@dimen/margin_10"
+        app:icon="@drawable/ic_baseline_menu_24"
+        app:iconTint="@color/white"/>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        app:fabCustomSize="40dp"
+        android:id="@+id/fabTimeConfig"
+        app:borderWidth="0dp"
+        android:backgroundTint="#b7c1c3"
+        android:layout_alignEnd="@id/fabMenuRelayFrag"
+        android:layout_margin="@dimen/margin_10"
+        android:layout_above="@+id/fabMenuRelayFrag"
+        android:src="@drawable/ic_alarm"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/fabTvTimeConfig"
+        android:layout_above="@id/fabMenuRelayFrag"
+        android:text="Configure Time"
+        android:layout_toLeftOf="@id/fabTimeConfig"
+        android:layout_marginBottom="20dp"
+        android:fontFamily="sans-serif-black"/>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabRelayData"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        app:fabCustomSize="40dp"
+        app:borderWidth="0dp"
+        android:layout_above="@+id/fabTimeConfig"
+        android:layout_alignEnd="@id/fabMenuRelayFrag"
+        android:layout_margin="@dimen/margin_10"
+        android:backgroundTint="#b7c1c3"
+        android:src="@drawable/ic_baseline_auto_graph_24" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/fabTvRelayData"
+        android:layout_above="@id/fabTimeConfig"
+        android:text="Historical Data"
+        android:layout_toLeftOf="@id/fabRelayData"
+        android:layout_marginBottom="20dp"
+        android:fontFamily="sans-serif-black"/>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        app:fabCustomSize="40dp"
+        android:id="@+id/fabDeleteDevice"
+        app:borderWidth="0dp"
+        android:backgroundTint="#b7c1c3"
+        android:layout_alignEnd="@id/fabMenuRelayFrag"
+        android:layout_margin="@dimen/margin_10"
+        android:layout_above="@+id/fabRelayData"
+        android:src="@drawable/ic_baseline_delete_24" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/fabTvDeleteDevice"
+        android:layout_above="@id/fabRelayData"
+        android:text="Detach Device"
+        android:layout_toLeftOf="@id/fabDeleteDevice"
+        android:layout_marginBottom="20dp"
+        android:fontFamily="sans-serif-black"/>
+
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/btnArm"
+        android:layout_alignParentBottom="true"
+        android:layout_marginLeft="@dimen/margin_10"
+        android:layout_marginBottom="@dimen/margin_10"
+        android:text="Arm Device"/>
+
+
+</RelativeLayout>

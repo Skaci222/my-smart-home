@@ -7,7 +7,7 @@ import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
 
-@Database(entities = {Device.class}, version = 2)
+@Database(entities = {Device.class}, version = 6)
 public abstract class DeviceDatabase extends RoomDatabase {
 
     public static DeviceDatabase instance;

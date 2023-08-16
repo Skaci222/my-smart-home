@@ -7,8 +7,8 @@
 
 
     <ImageView
-        android:layout_width="30dp"
-        android:layout_height="30dp"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
         android:id="@+id/ivTopIcon"
         android:src="@drawable/chipset"
         android:layout_margin="@dimen/margin_10"/>
@@ -19,21 +19,18 @@
         android:id="@+id/textViewTitle"
         android:text="No name"
         android:layout_toRightOf="@id/ivTopIcon"
-        android:textAppearance="@style/TextAppearance.AppCompat.Caption"
-        android:layout_marginTop="15dp"
-        android:clickable="true"
-        android:fontFamily="sans-serif-black"/>
+        android:textAppearance="@style/TextAppearance.AppCompat.Light.SearchResult.Title"
+        android:layout_marginTop="25dp"
+        android:fontFamily="sans-serif"/>
 
-    <TextView
-        android:id="@+id/tvTemp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Temperature"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="100dp"
-        android:textAppearance="@style/TextAppearance.AppCompat.Headline"
-        android:fontFamily="sans-serif-black"
-        android:textColor="@color/color_dark_gray"/>
+    <ImageView
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:id="@+id/ivTemp"
+        android:background="@drawable/ic_baseline_device_thermostat_24"
+        android:layout_below="@id/ivTopIcon"
+        android:layout_marginTop="20dp"
+        android:layout_alignParentRight="true"/>
 
     <TextView
         android:id="@+id/tvHumidity"
@@ -45,20 +42,20 @@
         android:text="Humidity"
         android:textAppearance="@style/TextAppearance.AppCompat.Headline"
         android:fontFamily="sans-serif-black"
-        android:textColor="@color/color_dark_gray"/>
+        android:textColor="@color/color_dark_gray"
+        android:visibility="gone"/>
 
     <TextView
         android:id="@+id/tvTempValue"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="----"
-        android:layout_centerHorizontal="true"
-        android:layout_below="@id/tvTemp"
-        android:layout_marginTop="10dp"
+        android:layout_centerInParent="true"
+        android:layout_marginTop="70dp"
+        android:layout_below="@id/ivTemp"
         android:layout_marginLeft="15dp"
-        android:textAppearance="@style/TextAppearance.AppCompat.Headline"
-        android:fontFamily="sans-serif-black"
-        android:textColor="@color/color_dark_gray"/>
+        android:textAppearance="@style/TextAppearance.AppCompat.Display4"
+        android:fontFamily="sans-serif"/>
 
     <TextView
         android:id="@+id/tvHumidityValue"
@@ -67,6 +64,7 @@
         android:layout_below="@id/tvHumidity"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="10dp"
+        android:visibility="gone"
         android:text="----"
         android:textAppearance="@style/TextAppearance.AppCompat.Headline"
         android:fontFamily="sans-serif-black"
@@ -79,33 +77,11 @@
         android:backgroundTint="@color/colorPrimary"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
-        android:layout_marginBottom="@dimen/margin_10"
-        android:layout_marginRight="@dimen/margin_10"
+        android:layout_marginBottom="20dp"
+        android:layout_marginRight="20dp"
         android:layout_marginTop="@dimen/margin_10"
         app:icon="@drawable/ic_baseline_menu_24"
         app:iconTint="@color/white"/>
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        app:fabCustomSize="40dp"
-        android:id="@+id/fabTimeConfig"
-        app:borderWidth="0dp"
-        android:backgroundTint="#b7c1c3"
-        android:layout_alignEnd="@id/fabMenuTempFrag"
-        android:layout_margin="@dimen/margin_10"
-        android:layout_above="@+id/fabMenuTempFrag"
-        android:src="@drawable/ic_alarm" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/fabTvTimeConfig"
-        android:layout_above="@id/fabMenuTempFrag"
-        android:text="Configure Time"
-        android:layout_toLeftOf="@id/fabTimeConfig"
-        android:layout_marginBottom="20dp"
-        android:fontFamily="sans-serif-black"/>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabTempData"
@@ -113,7 +89,7 @@
         android:layout_height="40dp"
         app:fabCustomSize="40dp"
         app:borderWidth="0dp"
-        android:layout_above="@+id/fabTimeConfig"
+        android:layout_above="@+id/fabMenuTempFrag"
         android:layout_alignEnd="@id/fabMenuTempFrag"
         android:layout_margin="@dimen/margin_10"
         android:backgroundTint="#b7c1c3"
@@ -123,7 +99,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/fabTvTempData"
-        android:layout_above="@id/fabTimeConfig"
+        android:layout_above="@id/fabMenuTempFrag"
         android:text="Historical Data"
         android:layout_toLeftOf="@id/fabTempData"
         android:layout_marginBottom="20dp"
@@ -149,7 +125,35 @@
         android:text="Detach Device"
         android:layout_toLeftOf="@id/fabDeleteTempDevice"
         android:layout_marginBottom="20dp"
+        android:layout_marginTop="20dp"
         android:fontFamily="sans-serif-black"/>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabTurnSwitchOn"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_above="@+id/fabDeleteTempDevice"
+        android:layout_alignEnd="@id/fabMenuTempFrag"
+        android:layout_marginStart="@dimen/margin_10"
+        android:layout_marginTop="@dimen/margin_10"
+        android:layout_marginEnd="@dimen/margin_10"
+        android:layout_marginBottom="@dimen/margin_10"
+        android:backgroundTint="#b7c1c3"
+        android:src="@drawable/ic_baseline_radio_button_checked_24"
+        app:borderWidth="0dp"
+        app:fabCustomSize="40dp"
+        android:visibility="gone"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/fabTvTurnSwitchOn"
+        android:layout_above="@id/fabTvDeleteTempDevice"
+        android:text="Turn Switch On"
+        android:layout_toLeftOf="@id/fabDeleteTempDevice"
+        android:layout_marginBottom="20dp"
+        android:fontFamily="sans-serif-black"
+        android:visibility="gone"/>
 
 
 

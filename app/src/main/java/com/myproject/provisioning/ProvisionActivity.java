@@ -90,9 +90,11 @@ public class ProvisionActivity extends AppCompatActivity { // this is the activi
         bundle = getIntent().getExtras();
         name = bundle.getString("name");
         deviceType = bundle.getString("type");
+        mac = bundle.getString("ssid");
 
         deviceViewModel = new ViewModelProvider(this).get(DeviceViewModel.class);
 
+        //calling dataExchange in onCreate, check if it works
         dataExchange();
         try {
             Thread.sleep(1000);
@@ -191,10 +193,15 @@ public class ProvisionActivity extends AppCompatActivity { // this is the activi
         device.sendDataToCustomEndPoint(CUSTOM_ENDPOINT, b, new ResponseListener() {
             @Override
             public void onSuccess(byte[] returnData) {
+                /**
+                 * obtain Mac from this callback and save it in a variable, send to StartScreen
+                 */
                 mac = new String(returnData, StandardCharsets.UTF_8);
-                //obtain Mac from this callback and save it in a variable, send to StartScreen
-
+                //bundle.putString("mac", mac);
+                Intent intent = new Intent(getApplicationContext(), StartScreen.class);
+                intent.putExtras(bundle);
                 Log.d(TAG, "return data: " + mac);
+                Log.i(TAG, "send data to custom endpoint is successful");
             }
 
             @Override
@@ -226,7 +233,7 @@ public class ProvisionActivity extends AppCompatActivity { // this is the activi
                         tvErrAtStep1.setVisibility(View.VISIBLE);
                         tvErrAtStep1.setText(R.string.error_session_creation);
                         tvProvError.setVisibility(View.VISIBLE);
-                        hideLoading();
+                        hideLoading();;
                     }
                 });
             }

@@ -1,9 +1,5 @@
 package com.myproject.ui.activities;
 
-import static android.content.Context.ALARM_SERVICE;
-import static com.myproject.ui.activities.StartScreen.RELAY_CONTROL_TOPIC;
-import static com.myproject.ui.activities.StartScreen.RELAY_VALUE;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -15,13 +11,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.CountDownTimer;
-import android.os.Parcelable;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -32,24 +23,24 @@ import android.widget.TimePicker;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.myproject.R;
+import com.myproject.logic.MqttService;
+import com.myproject.receiverlistener.ArmDisarmListener;
+import com.myproject.receiverlistener.ArmReceiver;
+import com.myproject.receiverlistener.DeleteDeviceListener;
+import com.myproject.receiverlistener.DisarmReceiver;
 
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.json.JSONException;
 
 import java.text.DateFormat;
-import java.time.Instant;
 import java.util.Calendar;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 
-public class HeaterFragment extends Fragment{
+public class SecurityFragment extends Fragment{
 
     public static final String STATUS = "status";
 
-    private TextView tvStatus, tvShowTime, tvTimeTitle, tvTimeTitle2, fabTvDeleteDevice, fabTvRelayData, fabTvTimeConfig, tvDeviceName;
-    TimePickerDialog.OnTimeSetListener listener;
+    private TextView tvStatus, tvShowTime, tvTimeTitle, fabTvDeleteDevice, fabTvRelayData, fabTvTimeConfig, tvDeviceName;
+    private TimePickerDialog.OnTimeSetListener listener;
     private Calendar c;
     private String heaterStatus;
     private String timeText;
@@ -58,18 +49,19 @@ public class HeaterFragment extends Fragment{
     private DeleteDeviceListener deleteDeviceListener;
     private ExtendedFloatingActionButton fabMenuRelayFrag;
     private FloatingActionButton fabTimeConfig, fabRelayData, fabDeleteDevice;
+    private Button btnArm;
     private boolean isFabExtended = false;
     private ImageView ivTopIcon;
     private String name;
     public MqttService mqttService;
-    private AlertReceiver receiver;
+    private ArmReceiver receiver;
+    private ArmDisarmListener armDisarmListener;
 
-
-
-    public static HeaterFragment newInstance(String status) {
+    public static SecurityFragment newInstance(String status, String name) {
         Bundle args = new Bundle();
         args.putString("status", status);
-        HeaterFragment heaterFragment = new HeaterFragment();
+        args.putString("deviceName", name);
+        SecurityFragment heaterFragment = new SecurityFragment();
         heaterFragment.setArguments(args);
         return heaterFragment;
     }
@@ -79,13 +71,13 @@ public class HeaterFragment extends Fragment{
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        View v = inflater.inflate(R.layout.heater_frag, container, false);
+        View v = inflater.inflate(R.layout.security_frag, container, false);
 
         ivTopIcon = v.findViewById(R.id.ivTopIcon);
         tvDeviceName = v.findViewById(R.id.textViewTitle);
         tvStatus = v.findViewById(R.id.tvHeatOnOffStatus);
+        btnArm = v.findViewById(R.id.btnArm);
         tvTimeTitle = v.findViewById(R.id.tvTimeTitle);
-        tvTimeTitle2 = v.findViewById(R.id.textView1);
         tvShowTime = v.findViewById(R.id.tvShowTime);
         c = Calendar.getInstance();
         sharedPreferences = getActivity().getSharedPreferences("shared_prefs", Context.MODE_PRIVATE);
@@ -109,8 +101,8 @@ public class HeaterFragment extends Fragment{
                 if (!isFabExtended) {
                     tvShowTime.setAlpha(0.1f);
                     tvTimeTitle.setAlpha(0.1f);
-                    tvTimeTitle2.setAlpha(0.1f);
                     tvStatus.setAlpha(0.1f);
+                    btnArm.setAlpha(0.1f);
                     fabTimeConfig.show();
                     fabTvTimeConfig.setVisibility(View.VISIBLE);
                     fabRelayData.show();
@@ -121,8 +113,8 @@ public class HeaterFragment extends Fragment{
                 } else {
                     tvShowTime.setAlpha(1f);
                     tvTimeTitle.setAlpha(1f);
-                    tvTimeTitle2.setAlpha(1f);
                     tvStatus.setAlpha(1f);
+                    btnArm.setAlpha(1f);
                     fabTimeConfig.hide();
                     fabTvTimeConfig.setVisibility(View.GONE);
                     fabRelayData.hide();
@@ -149,7 +141,6 @@ public class HeaterFragment extends Fragment{
                 fabTvRelayData.setVisibility(View.INVISIBLE);
                 tvShowTime.setAlpha(1f);
                 tvTimeTitle.setAlpha(1f);
-                tvTimeTitle2.setAlpha(1f);
                 tvStatus.setAlpha(1f);
             }
         });
@@ -164,7 +155,6 @@ public class HeaterFragment extends Fragment{
                 fabTvRelayData.setVisibility(View.INVISIBLE);
                 tvShowTime.setAlpha(1f);
                 tvTimeTitle.setAlpha(1f);
-                tvTimeTitle2.setAlpha(1f);
                 tvStatus.setAlpha(1f);
             }
         });
@@ -187,24 +177,50 @@ public class HeaterFragment extends Fragment{
                 fabTvRelayData.setVisibility(View.INVISIBLE);
                 tvShowTime.setAlpha(1f);
                 tvTimeTitle.setAlpha(1f);
-                tvTimeTitle2.setAlpha(1f);
                 tvStatus.setAlpha(1f);
+            }
+        });
+
+        btnArm.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                armDisarmListener = (ArmDisarmListener) getActivity();
+                if(btnArm.getText().equals("Arm Device")){
+                    try {
+                        armDisarmListener.armDevice();
+                    } catch (MqttException e) {
+                        throw new RuntimeException(e);
+                    } catch (JSONException e) {
+                        throw new RuntimeException(e);
+                    }
+                    btnArm.setText("Disarm Device");
+                } else if(btnArm.getText().equals("Disarm Device")){
+                    try {
+                        armDisarmListener.disarmDevice();
+                    } catch (MqttException e) {
+                        throw new RuntimeException(e);
+                    } catch (JSONException e) {
+                        throw new RuntimeException(e);
+                    }
+                    btnArm.setText("Arm Device");
+                }
+
             }
         });
 
 
         if (getArguments() != null) {
             name = getArguments().getString("deviceName");
-            tvDeviceName.setText(name);
             mqttService = getArguments().getParcelable("mqtt");
             heaterStatus = getArguments().getString("status");
             if (heaterStatus != null) {
                 if (heaterStatus.equals("1")) {
-                    tvStatus.setText("Status: ON");
+                    tvStatus.setText("Status: ARMED");
                 } else if (heaterStatus.equals("0")) {
-                    tvStatus.setText("Status: OFF");
+                    tvStatus.setText("Status: DISARMED");
                 }
             }
+            tvDeviceName.setText(name);
         }
 
         listener = new TimePickerDialog.OnTimeSetListener() {
@@ -212,21 +228,17 @@ public class HeaterFragment extends Fragment{
             public void onTimeSet(TimePicker timePicker, int i, int i1) {
                 c.set(Calendar.HOUR_OF_DAY, i);
                 c.set(Calendar.MINUTE, i1);
-                startHeater(c);
+                arm(c);
                 timeText = "";
                 timeText += DateFormat.getTimeInstance(DateFormat.SHORT).format(c.getTime());
                 tvShowTime.setText(timeText);
                 editor.putString("timeText", tvShowTime.getText().toString());
                 editor.apply();
                 Log.i("TAG", timeText);
-                // c.add(Calendar.MINUTE, 1);
-                // Log.i("TAG", "Heater will turn off at " + DateFormat.getTimeInstance().format(c.getTime()));
-                stopHeater(c);
+                disarm(c);
 
             }
         };
-
-
         return v;
     }
 
@@ -243,29 +255,30 @@ public class HeaterFragment extends Fragment{
     @Override
     public void onResume() {
         super.onResume();
-
     }
 
-    public void startHeater(Calendar cal) {
+    public void arm(Calendar cal) {
         AlarmManager alarmManager = (AlarmManager) getActivity().getSystemService(Context.ALARM_SERVICE);
-        Intent intent = new Intent(getActivity(), AlertReceiver.class);
+        Intent intent = new Intent(getActivity(), ArmReceiver.class);
         Bundle b = new Bundle();
         b.putParcelable("mqtt", mqttService);
         intent.putExtras(b);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(getActivity(), 2, intent, 0);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(getActivity(), 2, intent, PendingIntent.FLAG_IMMUTABLE);
         alarmManager.setExact(AlarmManager.RTC_WAKEUP, c.getTimeInMillis(), pendingIntent);
         //alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, c.getTimeInMillis(), AlarmManager.INTERVAL_DAY, pendingIntent);
-        Log.i("HEATERFRG", "startHeater activated");
+        Log.i("SecurityFrag", "device armed");
 
     }
 
-    public void stopHeater(Calendar cal) {
+    public void disarm(Calendar cal) {
         AlarmManager alarmManager = (AlarmManager) getActivity().getSystemService(Context.ALARM_SERVICE);
-        Intent intent = new Intent(getActivity(), HeatOffReceiver.class);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(getActivity(), 3, intent, 0);
+        Intent intent = new Intent(getActivity(), DisarmReceiver.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(getActivity(), 3, intent, PendingIntent.FLAG_IMMUTABLE);
         alarmManager.setExact(AlarmManager.RTC_WAKEUP, c.getTimeInMillis(), pendingIntent);
         c.add(Calendar.MINUTE, 1);
         alarmManager.setExact(AlarmManager.RTC_WAKEUP, c.getTimeInMillis(), pendingIntent);
+        Log.i("SecurityFrag", "device disarmed");
+
 
     }
 

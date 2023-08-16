@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/tvConnDevices"
+        android:text="Connected Devices"
+        android:layout_margin="@dimen/margin_10"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/tvConnDevices"
+        android:id="@+id/recycler_view_temperature"
+        android:layout_margin="@dimen/margin_10"/>
+
+</RelativeLayout>

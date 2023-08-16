@@ -4,17 +4,18 @@ import android.app.Application;
 import android.os.AsyncTask;
 
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
 
-import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class MessageRepo {
 
     private MessageDao messageDao;
     private LiveData<List<Message>> allMessages;
+    private LiveData<List<Message>> messagesFromKey;
+    private LiveData<List<Message>> messagesFromDate;
 
-    public MessageRepo (Application application){
+    public MessageRepo(Application application){
         MessageDatabase messageDatabase = MessageDatabase.getInstance(application);
         messageDao = messageDatabase.messageDao();
         allMessages = messageDao.getAllMessages();
@@ -38,6 +39,15 @@ public class MessageRepo {
 
     public LiveData<List<Message>> getAllMessages() {
         return allMessages;
+    }
+
+    public LiveData<List<Message>> getMessagesFromKey(String mKey){
+        messagesFromKey = messageDao.getMessagesFromKey(mKey);
+        return messagesFromKey;
+    }
+    public LiveData<List<Message>> getMessagesFromDate(Long date, String topic){
+        messagesFromDate = messageDao.getMessagesFromDate(date, topic);
+        return messagesFromDate;
     }
 
     private static class InsertMessageAsyncTask extends AsyncTask<Message, Void, Void>{

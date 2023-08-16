@@ -12,11 +12,18 @@ public class DeviceViewModel extends AndroidViewModel {
 
     private DeviceRepo deviceRepo;
     private LiveData<List<Device>> allDevices;
+    private LiveData<List<Device>> securityDevices;
+
+    private LiveData<List<Device>> temperatureDevices;
+
+
 
     public DeviceViewModel(@NonNull Application application) {
         super(application);
         deviceRepo = new DeviceRepo(application);
         allDevices = deviceRepo.getAllDevices();
+        securityDevices = deviceRepo.getSecurityDevices();
+        temperatureDevices = deviceRepo.getTemperatureDevices();
     }
 
     public void insert(Device device){
@@ -37,5 +44,13 @@ public class DeviceViewModel extends AndroidViewModel {
 
     public LiveData<List<Device>> getAllDevices(){
         return allDevices;
+    }
+
+    public LiveData<List<Device>> getTemperatureDevices(){
+        return temperatureDevices;
+    }
+
+    public LiveData<List<Device>> getSecurityDevices(){
+        return securityDevices;
     }
 }

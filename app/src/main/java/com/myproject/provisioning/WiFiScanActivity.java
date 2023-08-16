@@ -106,6 +106,7 @@ public class WiFiScanActivity extends AppCompatActivity {
                 } else {
                     askForNetwork(wifiAPList.get(pos).getWifiName(), wifiAPList.get(pos).getSecurity());
                 }
+
             }
         });
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -13,14 +13,12 @@
         android:id="@+id/fragment_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/white"
-        android:layout_weight="2.5">
+        android:background="@color/white">
 
         <ImageView
             android:id="@+id/ivBackground"
-            android:layout_width="300dp"
-            android:layout_height="300dp"
-            android:layout_gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="470dp"
             android:alpha=".25"
             android:background="@drawable/homi_1_3_" />
 
@@ -33,39 +31,64 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
-                android:layout_alignParentBottom="true"
-                android:layout_marginTop="10dp"
                 android:layout_marginEnd="10dp"
-                android:layout_marginBottom="10dp"
+                android:layout_above="@id/tempDeviceBtn"
                 android:backgroundTint="@color/colorPrimary"
                 android:textColor="@color/white"
                 app:icon="@drawable/ic_baseline_menu_24"
                 app:iconTint="@color/white" />
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/floatingAddBtn"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                app:fabCustomSize="40dp"
-                android:id="@+id/floatingAddBtn"
-                app:borderWidth="0dp"
+                android:layout_above="@+id/floatingMenuBtn"
                 android:layout_alignEnd="@+id/floatingMenuBtn"
                 android:layout_margin="@dimen/margin_10"
-                android:layout_above="@+id/floatingMenuBtn"
                 android:backgroundTint="#b7c1c3"
-                android:src="@drawable/ic_baseline_add_24" />
+                android:src="@drawable/ic_baseline_add_24"
+                app:borderWidth="0dp"
+                app:fabCustomSize="40dp" />
 
             <TextView
+                android:id="@+id/tvFabAdd"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/tvFabAdd"
-                android:text="Add Device"
-                android:layout_toLeftOf="@id/floatingAddBtn"
                 android:layout_above="@id/floatingMenuBtn"
-                android:layout_marginBottom="20dp"
                 android:layout_marginRight="8dp"
-                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                android:fontFamily="sans-serif-black"/>
+                android:layout_marginBottom="20dp"
+                android:layout_toLeftOf="@id/floatingAddBtn"
+                android:fontFamily="sans-serif-black"
+                android:text="Add Device"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
 
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recycler_view"
+                android:layout_width="match_parent"
+                android:layout_height="220dp"
+                android:scrollbars="vertical"
+                android:layout_margin="@dimen/margin_10"
+                android:layout_alignParentBottom="true"
+                android:visibility="gone"/>
+            
+            <Button
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:id="@+id/tempDeviceBtn"
+                android:layout_alignParentBottom="true"
+                android:drawableTop="@drawable/ic_baseline_device_thermostat_24"
+                android:text="Thermostat"
+                android:layout_margin="50dp"/>
+
+            <Button
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:id="@+id/secDeviceBtn"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentRight="true"
+                android:drawableTop="@drawable/ic_security"
+                android:text="Security"
+                android:layout_margin="50dp"/>
 
 
         </RelativeLayout>
@@ -74,22 +97,5 @@
     </FrameLayout>
 
 
-    <LinearLayout
-        android:id="@+id/relativeLayout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="5.5"
-        android:elevation="5dp"
-        android:orientation="vertical">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recycler_view"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_margin="25dp"
-            android:scrollbars="vertical"/>
-
-    </LinearLayout>
-
-
-</LinearLayout>
+</RelativeLayout>

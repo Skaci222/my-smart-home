@@ -12,10 +12,16 @@ public class DeviceRepo {
     private DeviceDao deviceDao;
     private LiveData<List<Device>> allDevices;
 
+    private LiveData<List<Device>> securityDevices;
+
+    private LiveData<List<Device>> temperatureDevices;
+
     public DeviceRepo(Application application){
         DeviceDatabase deviceDatabase = DeviceDatabase.getInstance(application);
         deviceDao = deviceDatabase.deviceDao();
         allDevices = deviceDao.getAllDevices();
+        securityDevices = deviceDao.getSecurityDevices();
+        temperatureDevices = deviceDao.getTemperatureDevices();
     }
 
     public void insert(Device device){
@@ -36,6 +42,14 @@ public class DeviceRepo {
 
     public LiveData<List<Device>> getAllDevices(){
         return allDevices;
+    }
+
+    public LiveData<List<Device>> getTemperatureDevices(){
+        return temperatureDevices;
+    }
+
+    public LiveData<List<Device>> getSecurityDevices(){
+        return securityDevices;
     }
 
     private static class InsertDeviceAsyncTask extends AsyncTask<Device, Void, Void> {

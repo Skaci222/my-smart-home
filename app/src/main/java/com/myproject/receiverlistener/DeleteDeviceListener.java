@@ -1,4 +1,4 @@
-package com.myproject.ui.activities;
+package com.myproject.receiverlistener;
 
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.json.JSONException;

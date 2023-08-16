@@ -1,4 +1,4 @@
-package com.myproject.ui.activities;
+package com.myproject.logic;
 
 import android.app.Application;
 import android.app.Notification;

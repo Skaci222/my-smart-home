@@ -2,34 +2,23 @@ package com.myproject.room;
 
 import android.app.Application;
 import android.content.Context;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
 
-import org.eclipse.paho.android.service.MqttAndroidClient;
-import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
-import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
-import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class MessageViewModel extends AndroidViewModel {
 
     private MessageRepo messageRepo;
     private LiveData<List<Message>> allMessages;
+    private LiveData<List<Message>> messagesFromKey;
+    private LiveData<List<Message>> messagesFromDate;
     public static final String TAG = "ViewModelClass";
-    public MqttAndroidClient mqttAndroidClient;
     private Context context;
-    private ArrayList<Message> values = new ArrayList<>();
 
     public MessageViewModel(@NonNull Application application) {
         super(application);
@@ -57,6 +46,15 @@ public class MessageViewModel extends AndroidViewModel {
     public LiveData<List<Message>> getAllMessages() {
         return allMessages;
     }
+
+    public LiveData<List<Message>> getMessagesFromKey(String mKey){
+        messagesFromKey = messageRepo.getMessagesFromKey(mKey);
+        return messagesFromKey;
+    }
+     public LiveData<List<Message>> getMessagesFromDate(Long date, String topic){
+        messagesFromDate = messageRepo.getMessagesFromDate(date, topic);
+        return messagesFromDate;
+     }
 
 
 }

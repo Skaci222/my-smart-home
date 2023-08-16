@@ -1,4 +1,4 @@
-package com.myproject.ui.activities;
+package com.myproject.logic;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -13,6 +13,7 @@ import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
 import com.myproject.R;
+import com.myproject.ui.activities.StartScreen;
 
 public class MyService extends Service {
 
@@ -32,7 +33,7 @@ public class MyService extends Service {
         notificationIntent.setAction(Intent.ACTION_MAIN);
         notificationIntent.addCategory(Intent.CATEGORY_LAUNCHER);
         PendingIntent contentIntent = PendingIntent.getActivity(
-                this, 1, notificationIntent, 0);
+                this, 1, notificationIntent, PendingIntent.FLAG_IMMUTABLE);
 
         Notification notification = new NotificationCompat.Builder(
                 this.getApplicationContext(), App.SERVICE_NOTIFICATION)

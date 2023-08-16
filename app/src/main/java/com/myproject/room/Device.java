@@ -12,7 +12,6 @@ import java.io.Serializable;
 public class Device {
     @PrimaryKey(autoGenerate = true)
     private int id;
-
     private String name;
     private String type;
     private String mac;
