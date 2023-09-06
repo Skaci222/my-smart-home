@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.myproject.R;
+import com.myproject.receiverlistener.DeviceClickListener;
 import com.myproject.room.Device;
 import com.myproject.room.DeviceViewModel;
 import com.myproject.ui.adapters.SecurityRVAdapter;
@@ -35,7 +36,13 @@ public class SecurityListFrag extends Fragment {
 
     private Device device;
     private String deviceName;
+
+    private String deviceUniqueId;
+
+    private String deviceType;
     private int deviceId;
+
+    private DeviceClickListener deviceClickListener;
 
     public static SecurityListFrag newInstance(String name, String mac){
         Bundle bundle = new Bundle();
@@ -73,6 +80,8 @@ public class SecurityListFrag extends Fragment {
                 device = adapter.getDeviceAt(position);
                 deviceName = device.getName();
                 deviceId = device.getId();
+                deviceUniqueId = device.getMac();
+                deviceType = device.getType();
                 Bundle b = new Bundle();
                 b.putString("deviceName", deviceName);
                 b.putInt("id", deviceId);
@@ -80,8 +89,11 @@ public class SecurityListFrag extends Fragment {
 
                 getActivity().getSupportFragmentManager().beginTransaction()
                         .replace(R.id.fragment_layout, securityFragment, "security_fragment")
-                        .addToBackStack("securoty_fragmant")
+                        .addToBackStack("security_fragmant")
                         .commit();
+
+                deviceClickListener = (DeviceClickListener) getActivity();
+                deviceClickListener.onDeviceClicked(deviceType, deviceUniqueId);
             }
 
             @Override

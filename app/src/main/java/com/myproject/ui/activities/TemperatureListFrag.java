@@ -41,7 +41,9 @@ public class TemperatureListFrag extends Fragment {
     private Device device;
     private String deviceName;
     private int deviceId;
-    private String deviceMac;
+    private String deviceUniqueId;
+
+    private String deviceType;
     private MqttService mqttService;
     public ScheduledExecutorService tempExecutorService1, tempExecutiveService2;
     private DeviceClickListener deviceClickListener;
@@ -91,6 +93,8 @@ public class TemperatureListFrag extends Fragment {
                 device = adapter.getDeviceAt(position);
                 deviceId = device.getId();
                 deviceName = device.getName();
+                deviceUniqueId = device.getMac();
+                deviceType = device.getType();
                 Bundle b = new Bundle();
                 temperatureFragment = new TemperatureFragment();
                 b.putString("deviceName", deviceName);
@@ -102,7 +106,7 @@ public class TemperatureListFrag extends Fragment {
                 mqttService.subscribeToTemp();
                // mqttService.publishTempRequest(device.getMac()); //figure out which method to remove
                 deviceClickListener = (DeviceClickListener) getActivity();
-                deviceClickListener.onDeviceClicked(device.getMac());
+                deviceClickListener.onDeviceClicked(deviceType, deviceUniqueId);
                /* Runnable tempRequest = new Runnable() {
                     @Override
                     public void run() {

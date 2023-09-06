@@ -65,6 +65,8 @@ public class MqttService implements Parcelable{
     private RetrofitService retrofitService = new RetrofitService();
     private MessageApi messageApi = retrofitService.getRetrofit().create(MessageApi.class);
 
+    private boolean isConnected = false;
+
     public interface CallBackListener{
         void messageReceived(String topic, String key, String message);
     }
@@ -115,57 +117,59 @@ public class MqttService implements Parcelable{
     }
 
     public void connectMqtt() throws MqttException {
-        IMqttToken token = client.connect(getMqttOptions());
-        token.setActionCallback(new IMqttActionListener() {
-            @Override
-            public void onSuccess(IMqttToken asyncActionToken) {
-                Log.i(TAG, "onSuccess");
-                client.setCallback(new MqttCallbackExtended() {
-                    @Override
-                    public void connectComplete(boolean reconnect, String serverURI) {
+            IMqttToken token = client.connect(getMqttOptions());
+            token.setActionCallback(new IMqttActionListener() {
+                @Override
+                public void onSuccess(IMqttToken asyncActionToken) {
+                    Log.i(TAG, "onSuccess");
+                    isConnected = true;
+                    client.setCallback(new MqttCallbackExtended() {
+                        @Override
+                        public void connectComplete(boolean reconnect, String serverURI) {
 
-                    }
-
-                    @Override
-                    public void connectionLost(Throwable cause) {
-                        try {
-                            connectMqtt();
-                        } catch (MqttException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-
-                    @Override
-                    public void messageArrived(String topic, MqttMessage message) throws Exception {
-                        JSONObject object = new JSONObject(new String(message.getPayload()));
-                       String key= "";
-                        if(object.toString().contains("Temperature")){
-                            key = "Temperature";
-                        } if(object.toString().contains("Relay")){
-                            key = "Relay";
-                        }
-                        String msg = object.getString(key);
-
-                        if(listener != null) {
-                            listener.messageReceived(topic,key, msg);
-                     //   } else {
-                          //  Log.i(TAG, "listener is null");
                         }
 
-                    }
+                        @Override
+                        public void connectionLost(Throwable cause) {
+                            try {
+                                connectMqtt();
+                            } catch (MqttException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
 
-                    @Override
-                    public void deliveryComplete(IMqttDeliveryToken token) {
+                        @Override
+                        public void messageArrived(String topic, MqttMessage message) throws Exception {
+                            JSONObject object = new JSONObject(new String(message.getPayload()));
+                            String key = "";
+                            if (object.toString().contains("Temperature")) {
+                                key = "Temperature";
+                            }
+                            if (object.toString().contains("Relay")) {
+                                key = "Relay";
+                            }
+                            String msg = object.getString(key);
 
-                    }
-                });
-            }
+                            if (listener != null) {
+                                listener.messageReceived(topic, key, msg);
+                                //   } else {
+                                //  Log.i(TAG, "listener is null");
+                            }
 
-            @Override
-            public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-                Log.i(TAG, "did not connect :(");
-            }
-        });
+                        }
+
+                        @Override
+                        public void deliveryComplete(IMqttDeliveryToken token) {
+
+                        }
+                    });
+                }
+
+                @Override
+                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+                    Log.i(TAG, "did not connect :(");
+                }
+            });
     }
 
    /* public void publish(String topic, String key, String value) throws JSONException, MqttException {
@@ -178,17 +182,25 @@ public class MqttService implements Parcelable{
 
     /**
      * publishing request with device MAC appended to topic name
-     * @param deviceMac
+     * @param deviceId
      * @throws JSONException
      * @throws MqttException
      */
-    public void publishTempRequest(String deviceMac) throws JSONException, MqttException {
+    public void publishToTopic(String deviceType, String deviceId) throws JSONException, MqttException {
         JSONObject object = new JSONObject();
-        object.put("request", "1");
+        object.put("test key", "test value");
         MqttMessage message = new MqttMessage(object.toString().getBytes(StandardCharsets.UTF_8));
-        client.publish(TEMP_PUB, message);
-               // +"/"+deviceMac, message);
-        Log.i(TAG, "published " + message + "to " + TEMP_PUB+"/"+deviceMac);
+        client.publish("iot-2/" + deviceType + "/" + deviceId + "/json", message);
+        Log.i(TAG, "published " + message + "to: iot-2/" + deviceType + "/" + deviceId + "/json");
+        Toast.makeText(context, "published " + message + "to: iot-2/" + deviceType + "/" + deviceId + "/json", Toast.LENGTH_SHORT).show();
+
+    }
+
+    public void subscribeToTopic(String deviceType, String deviceId) throws MqttException {
+        String topic = "iot-2/" + deviceType + "/" + deviceId + "/json";
+        client.subscribe(topic, 0);
+        Log.i(TAG, "subscribed to: " + topic);
+
     }
 
     public void publishRelayStatusRequest() throws JSONException, MqttException {

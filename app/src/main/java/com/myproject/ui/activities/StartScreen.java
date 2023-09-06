@@ -89,6 +89,12 @@ public class StartScreen extends AppCompatActivity implements RenameDialog.OnInp
     public static final String SHARED_PREFS = "shared_preferences";
     public static final String HIVE_BROKER = "ssl://e7ea538cb0564a42b068269a96574848.s1.eu.hivemq.cloud:8883";
 
+    /**
+     *   subscribing topic: "iot-2/evt/device_type/device_id/json";
+     *   publishing topic: "iot-2/cmd/device_type/device_id/json";
+     */
+
+
     private RecyclerView mRecyclerView;
     private RecyclerViewAdapter mRecyclerViewAdapter;
     private RecyclerView.LayoutManager layoutManager;
@@ -532,11 +538,11 @@ public class StartScreen extends AppCompatActivity implements RenameDialog.OnInp
                                         //from StartScreen activity
 
                 if (rbTemp.isChecked()) {
-                    deviceType = "temperature";
+                    deviceType = "temperature_device";
                 } else if (rbMotion.isChecked()) {
-                    deviceType = "motion";
+                    deviceType = "security_device";
                 } else if (rbHeater.isChecked()) {
-                    deviceType = "heater";
+                    deviceType = "relay_device";
                 }
 
                 if (TextUtils.isEmpty(deviceName.getText().toString())) {
@@ -575,7 +581,7 @@ public class StartScreen extends AppCompatActivity implements RenameDialog.OnInp
                 @Override
                 public void run() {
                     try {
-                        mqttService.publishTempRequest(deviceMac); //device may not be recognized here
+                        mqttService.publishToTopic("temperature_device", deviceMac); //device may not be recognized here
                         Log.i(TAG, "temp executor 2 is running");
 
                     } catch (JSONException e) {
@@ -876,30 +882,31 @@ public class StartScreen extends AppCompatActivity implements RenameDialog.OnInp
     }
 
     @Override
-    public void onDeviceClicked(String mac) {
-        Log.i(TAG, "onDeviceClicked, mac is: "+ mac);
-        isRequestingTempStatus = true;
-        //deviceMac = mac;
+    public void onDeviceClicked(String deviceType, String deviceId) throws MqttException, JSONException {
+        if(deviceType.equals("temperature_device")) {
+            isRequestingTempStatus = true;
+            /**
+             * Runs temp executor 1 to publish temperature request and display value in TemperatureFragment when visible
+             */
+          Runnable tempRequest = new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        mqttService.publishToTopic(deviceType, deviceId);
+                        Log.i(TAG, "temp executor 1 running");
 
-        /**
-         * Runs temp executor 1 to publish temperature request and display value in TemperatureFragment when visible
-         */
-        Runnable tempRequest = new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    mqttService.publishTempRequest(mac);
-                    Log.i(TAG, "temp executor 1 running");
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                } catch (MqttException e) {
-                    e.printStackTrace();
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    } catch (MqttException e) {
+                        e.printStackTrace();
+                    }
                 }
-            }
-        };
-        tempExecutorService1 = Executors.newScheduledThreadPool(1);
-        tempExecutorService1.scheduleAtFixedRate(tempRequest, 0, 5, TimeUnit.SECONDS);
+            };
+            tempExecutorService1 = Executors.newScheduledThreadPool(1);
+            tempExecutorService1.scheduleAtFixedRate(tempRequest, 0, 5, TimeUnit.SECONDS);
+        } else if(deviceType.equals("security_device")){
+        mqttService.publishToTopic(deviceType,deviceId);
+        }
 
     }
 }

@@ -32,6 +32,7 @@ import androidx.core.widget.ContentLoadingProgressBar;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.myproject.AppConstants;
+import com.myproject.logic.MqttService;
 import com.myproject.provisioning.listeners.ResponseListener;
 import com.myproject.R;
 import com.myproject.provisioning.listeners.ProvisionListener;
@@ -39,6 +40,7 @@ import com.myproject.room.Device;
 import com.myproject.room.DeviceViewModel;
 import com.myproject.ui.activities.StartScreen;
 
+import org.eclipse.paho.client.mqttv3.MqttException;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -68,9 +70,11 @@ public class ProvisionActivity extends AppCompatActivity { // this is the activi
     private String name;
     private String deviceType;
     private android.app.AlertDialog dialog;
-    private String mac;
+    private String deviceId;
     private DeviceViewModel deviceViewModel;
     private Bundle bundle;
+
+    private MqttService mqttService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,6 +82,11 @@ public class ProvisionActivity extends AppCompatActivity { // this is the activi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_provision);
 
+      /*  try {
+            mqttService = new MqttService(getApplicationContext());
+        } catch (MqttException e) {
+            throw new RuntimeException(e);
+        }*/
         Intent intent = getIntent();
         ssidValue = intent.getStringExtra(AppConstants.KEY_WIFI_SSID);
         passphraseValue = intent.getStringExtra(AppConstants.KEY_WIFI_PASSWORD);
@@ -89,8 +98,8 @@ public class ProvisionActivity extends AppCompatActivity { // this is the activi
 
         bundle = getIntent().getExtras();
         name = bundle.getString("name");
-        deviceType = bundle.getString("type");
-        mac = bundle.getString("ssid");
+        //deviceType = bundle.getString("type");
+        //deviceId = bundle.getString("ssid");
 
         deviceViewModel = new ViewModelProvider(this).get(DeviceViewModel.class);
 
@@ -133,12 +142,21 @@ public class ProvisionActivity extends AppCompatActivity { // this is the activi
         }
     }
 
+    /**
+     * Pressing OK button when provisioning is completed
+     */
     private View.OnClickListener okBtnClickListener = new View.OnClickListener() {
 
         @Override
         public void onClick(View v) {
-            Device device = new Device(name, deviceType, mac);
+            Device device = new Device(name, deviceType, deviceId);
             deviceViewModel.insert(device);
+            //try/catch block might not work, check status of mqttService object
+            /*try {
+                mqttService.subscribeToTopic(deviceType, deviceId);
+            } catch (MqttException e) {
+                throw new RuntimeException(e);
+            }*/
             Intent i = new Intent(getApplicationContext(), StartScreen.class);
             i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(i);
@@ -196,11 +214,16 @@ public class ProvisionActivity extends AppCompatActivity { // this is the activi
                 /**
                  * obtain Mac from this callback and save it in a variable, send to StartScreen
                  */
-                mac = new String(returnData, StandardCharsets.UTF_8);
+                deviceId = new String(returnData, StandardCharsets.UTF_8);
+                if(deviceId.contains("SECURITY")){
+                    deviceType = "security_device";
+                } else{
+                    deviceType = "other_type"; //add other device types
+                }
                 //bundle.putString("mac", mac);
                 Intent intent = new Intent(getApplicationContext(), StartScreen.class);
                 intent.putExtras(bundle);
-                Log.d(TAG, "return data: " + mac);
+                Log.d(TAG, "return data: " + deviceId);
                 Log.i(TAG, "send data to custom endpoint is successful");
             }
 

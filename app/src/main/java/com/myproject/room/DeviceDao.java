@@ -29,7 +29,7 @@ public interface DeviceDao {
     @Query("SELECT * FROM device_table") // '*' means all columns
     LiveData<List<Device>> getAllDevices();
 
-    @Query("SELECT * FROM device_table WHERE type = 'motion'")
+    @Query("SELECT * FROM device_table WHERE type = 'security_device'")
     LiveData<List<Device>> getSecurityDevices();
 
     @Query("SELECT * FROM device_table WHERE type = 'temperature'")
